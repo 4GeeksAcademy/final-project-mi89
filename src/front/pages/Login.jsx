@@ -4,8 +4,6 @@ import useGlobalReducer from "../hooks/useGlobalReducer";
 export const Login = () => {
     const { store, dispatch } = useGlobalReducer();
 
-    const [loggedIn, setLoggedIn] = useState(false); // Will update when the backend log in is complete
-    const [signedUp, setSignedUp] = useState(false); // Will update when the backend sign up is complete, or after backend check confirms that user exists
     const [logInType, setLogInType] = useState("Log In") // Other value will be "Sign Up"
     const [userType, setUserType] = useState("Customer"); // Other value will be "Owner"
     const [email, setEmail] = useState(undefined);
@@ -22,6 +20,31 @@ export const Login = () => {
         }
         console.log("When trying to submit the login/signup form, the logInType is invalid (needs to be 'Log In' or 'Log In'");
         alert("There is an error. Please refresh the page and try again.");
+    }
+
+    const login = async (email, password) => {
+        const resp = await fetch(`https://curly-potato-7v99x7q67v46hg75-3001.app.github.dev/api/token`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        })
+
+        if (!resp.ok) throw Error("There was a problem in the login request")
+
+        if (resp.status === 401) {
+            throw ("Invalid credentials")
+        }
+        else if (resp.status === 400) {
+            throw ("Invalid email or password format")
+        }
+        const data = await resp.json()
+        // Save your token in the localStorage
+        // Also you should set your user into the store using the setItem function
+        localStorage.setItem("jwt-token", data.token);
+
+        dispatch({ type: "isLoggedIn", payload: true })
+
+        return data
     }
 
     return (
@@ -45,7 +68,7 @@ export const Login = () => {
                             onChange={(e) => { setPassword(e.target.value) }}
                         />
                     </label>
-                    <input type="submit" />
+                    <input type="submit" onSubmit={login(email, password)} />
                 </form>)
                 : (<button type="button">Log Out</button>)}
 
