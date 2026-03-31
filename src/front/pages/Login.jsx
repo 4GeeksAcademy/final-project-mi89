@@ -1,19 +1,20 @@
 import React, { useState } from "react";
 
 export const Login = () => {
-    const [loggedIn, setLoggedIn] = useState(false);
+    const [signedIn, setSignedIn] = useState(false); // Will update when the backend sign in is complete
+    const [signedUp, setSignedUp] = useState(false); // Will update when the backend sign up is complete, or after backend check confirms that user exists
     const [logInType, setLogInType] = useState("Sign In") // Other value will be "Sign Up"
-    const [userType, setUserType] = useState("customer"); // Other value will be "owner"
+    const [userType, setUserType] = useState("Customer"); // Other value will be "Owner"
     const [email, setEmail] = useState(undefined);
     const [password, setPassword] = useState(undefined);
 
     function submitCredentials() {
         e.preventDefault();
-        if (userType === "customer") {
-           // what happens when customer submits log in / sign up form
+        if (userType === "Customer") {
+           console.log("Customer submitted" + {logInType} + "credentials")
            return
-        } else if (userType === "owner") {
-            // what happens when owner submits log in / sign up form
+        } else if (userType === "Owner") {
+            console.log("Owner submitted" + {logInType} + "credentials")
             return
         }
         console.log("When trying to submit the login/signup form, the logInType is invalid (needs to be 'Sign In' or 'Log In'");
@@ -23,7 +24,8 @@ export const Login = () => {
     return (
         <div>
             <form onSubmit={submitCredentials}>
-                <h2>{logInType}</h2>
+                <h2>{userType} {logInType}</h2>
+                <button type="button" onClick={()=>{setUserType(userType === "Customer" ? "Owner" : "Customer")}}>I'm a restaurant {userType === "Customer" ? "owner" : "customer"}</button>
                 <small>{logInType === "Sign In" ? "Don't" : "Already"} have an account? <span className="text-primary" onClick={()=>{logInType === "Sign In" ? setLogInType("Sign Up") : setLogInType("Sign In")}}>Click here to {logInType === "Sign In" ? "create one." : "sign in."}</span></small>
                 <label>Email:
                     <input
