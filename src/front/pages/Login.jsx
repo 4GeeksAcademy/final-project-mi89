@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 
 export const Login = () => {
     const [loggedIn, setLoggedIn] = useState(false);
-    const [logInType, setLogInType] = useState("Sign In") // Other value will be "Sign Up", "Register" or similar
-    const [userType, setUserType] = useState("customer"); // Or "owner"
+    const [logInType, setLogInType] = useState("Sign In") // Other value will be "Sign Up"
+    const [userType, setUserType] = useState("customer"); // Other value will be "owner"
     const [email, setEmail] = useState(undefined);
     const [password, setPassword] = useState(undefined);
 
     function submitCredentials() {
+        e.preventDefault();
         if (userType === "customer") {
            // what happens when customer submits log in / sign up form
            return
@@ -16,28 +16,27 @@ export const Login = () => {
             // what happens when owner submits log in / sign up form
             return
         }
-        // Error handling: what to do if userType is not "customer" or "owner"
+        console.log("When trying to submit the login/signup form, the logInType is invalid (needs to be 'Sign In' or 'Log In'");
+        alert("There is an error. Please refresh the page and try again.");
     }
 
     return (
         <div>
-            <input type="email" />
-            <input type="password" />
             <form onSubmit={submitCredentials}>
                 <h2>{logInType}</h2>
-                <small>{logInType === "Sign In" ? "Don't" : "Already"} have an account? <Link>Click here to {logInType === "Sign In" ? "create one." : "sign in."}</Link></small>
+                <small>{logInType === "Sign In" ? "Don't" : "Already"} have an account? <span className="text-primary" onClick={()=>{logInType === "Sign In" ? setLogInType("Sign Up") : setLogInType("Sign In")}}>Click here to {logInType === "Sign In" ? "create one." : "sign in."}</span></small>
                 <label>Email:
                     <input
                         type="email"
                         value={email}
-                        onChange={setEmail(e.target.value)}
+                        onChange={(e)=>{setEmail(e.target.value)}}
                     />
                 </label>
                 <label>Password:
                     <input
                         type="password"
                         value={password}
-                        onChange={setPassword(e.target.value)}
+                        onChange={(e)=>{setPassword(e.target.value)}}
                     />
                 </label>
                 <input type="submit" />
