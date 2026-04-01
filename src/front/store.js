@@ -2,6 +2,7 @@ export const initialStore = () => {
   return {
     isLoggedIn: false,
     userType: null,
+    userToken: "",
   };
 };
 
@@ -17,6 +18,12 @@ export default function storeReducer(store, action = {}) {
       return {
         ...store,
         userType: action.payload,
+      };
+
+    case "set_userToken":
+      return {
+        ...store,
+        userToken: action.payload,
       };
 
     default:
