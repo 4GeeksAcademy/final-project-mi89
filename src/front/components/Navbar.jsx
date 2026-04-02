@@ -88,8 +88,8 @@ export const Navbar = () => {
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item " to="/signup ">
-                        <i class="fa-solid fa-user-plus me-2 "></i>  Sign Up
+                      <Link className="dropdown-item " to="/login">
+                        <i className="fa-solid fa-user-plus me-2 "></i>  Sign Up
                       </Link>
                     </li>
                     <li className="dropdown-item " >
