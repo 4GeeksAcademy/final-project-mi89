@@ -5,16 +5,15 @@ import { Navbar } from "../components/Navbar";
 export const Login = () => {
     const { store, dispatch } = useGlobalReducer();
 
-    const [logInType, setLogInType] = useState("Log In") // Other value will be "Sign Up"
+    const [logInType, setLogInType] = useState("Log In"); // Other value will be "Sign Up"
     const [userType, setUserType] = useState("Customer"); // Other value will be "Owner"
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
     function submitCredentials(e) {
         e.preventDefault();
-        logInType === "Log In" && login(email, password)
-        logInType === "Sign Up" && signup(userType, email, password)
-        dispatch({ type: "set_isLoggedIn", payload: true })
+        logInType === "Log In" && login(email, password);
+        logInType === "Sign Up" && signup(userType, email, password);
         console.log("User " + email + " is trying to " + logInType);
     }
 
@@ -36,10 +35,10 @@ export const Login = () => {
         const data = await resp.json()
         // Save your token in the localStorage
         // Also you should set your user into the store using the setItem function
-        localStorage.setItem("jwt-token", data.token);
+        localStorage.setItem("jwt-token", data.access_token);
 
-        dispatch({ type: "set_userToken", payload: data.token })
-        console.log("token after logging in:", store.userToken)
+        dispatch({ type: "set_userToken", payload: data.access_token })
+        console.log("token after logging in:", data.access_token)
 
         return data
     }
@@ -62,24 +61,25 @@ export const Login = () => {
         const data = await resp.json()
         // Save your token in the localStorage
         // Also you should set your user into the store using the setItem function
-        localStorage.setItem("jwt-token", data.token);
+        localStorage.setItem("jwt-token", data.access_token);
 
-        dispatch({ type: "set_userToken", payload: data.token })
-        console.log("token after signing up:", store.userToken)
+        dispatch({ type: "set_userToken", payload: data.access_token })
+        console.log("token after signing up:", data.access_token)
 
         return data
     }
 
     const logout = () => {
-        dispatch({ type: "set_userToken", payload: "" })
-        dispatch({ type: "set_isLoggedIn", payload: false })
-        console.log("token after logging out:", store.userToken)
+        localStorage.removeItem("jwt-token");
+        dispatch({ type: "set_userToken", payload: null });
+        setEmail("");
+        setPassword("");
+        console.log("token after logging out:", store.userToken);
     }
 
     return (
         <div>
-            <Navbar/>
-            {!store.isLoggedIn ?
+            {store.userToken === null ?
                 (<form onSubmit={submitCredentials} className="mt-5 pt-5">
                     <h2>{userType} {logInType}</h2>
                     <label>I am a restaurant owner.
@@ -114,7 +114,6 @@ export const Login = () => {
                     <input type="submit" />
                 </form>)
                 : (<button type="button" onClick={logout} className="pt-5 mt-5">Log Out</button>)}
-
         </div>
     )
 }

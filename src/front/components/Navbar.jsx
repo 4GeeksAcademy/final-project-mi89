@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export const Navbar = () => {
+  const { store } = useGlobalReducer();
+
   return (
     <nav className="navbar navbar-dark bg-dark fixed-top">
       <div className="container-fluid">
@@ -89,11 +92,9 @@ export const Navbar = () => {
                     </li>
                     <li>
                       <Link className="dropdown-item " to="/login">
-                        <i className="fa-solid fa-user-plus me-2 "></i>  Sign Up
+                        <i className="fa-solid fa-user-plus me-2 "></i>
+                        {store.userToken === null ? <span>Log In or Sign Up</span> : <span>Log Out</span>}
                       </Link>
-                    </li>
-                    <li className="dropdown-item " >
-                      Log In
                     </li>
                   </ul>
                 </li>

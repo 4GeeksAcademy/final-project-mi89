@@ -1,18 +1,12 @@
 export const initialStore = () => {
   return {
-    isLoggedIn: false,
     userType: null,
-    userToken: "",
+    userToken: null,
   };
 };
 
 export default function storeReducer(store, action = {}) {
   switch (action.type) {
-    case "set_isLoggedIn":
-      return {
-        ...store,
-        isLoggedIn: action.payload,
-      };
 
     case "set_userType":
       return {
