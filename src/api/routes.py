@@ -38,7 +38,7 @@ def create_token():
 
     # Create a new token with the user id inside
     access_token = create_access_token(identity=user.id)
-    return jsonify({"token": access_token, "user_id": user.id})
+    return jsonify({"access_token": access_token, "user_id": user.id}), 201
 
 
 @api.route("/users", methods=["GET"])
@@ -57,7 +57,8 @@ def create_user():
     password = request.json.get("password")
     if not user_type or not email or not password:
         return jsonify({"msg": "Missing user type (customer/owner), email, or password"}), 400
-    user = User(user_type=user_type, email=email, password=password, is_active=True)
+    user = User(user_type=user_type, email=email,
+                password=password, is_active=True)
     db.session.add(user)
     db.session.commit()
     return jsonify(user.serialize()), 201
@@ -68,11 +69,16 @@ def login():
     user_type = request.json.get("user_type", None)
     email = request.json.get("email", None)
     password = request.json.get("password", None)
+
     user = User.query.filter_by(email=email).first()
-    if user and user.password == password:
-        access_token = create_access_token(identity=user.id)
-        return jsonify(access_token=access_token), 200
-    return jsonify({"msg": "Bad email or password"}), 401
+    if user is None:
+        return jsonify(msg="Invalid username or password"), 401
+
+    if not user.check_password_hash(password):
+        return jsonify(msg="Invalid username or password"), 401
+
+    access_token = create_access_token(identity=user.id)
+    return jsonify(access_token=access_token), 200
 
 
 @api.route("/signup", methods=["POST"])
@@ -100,6 +106,6 @@ def signup():
 
     access_token = create_access_token(identity=user.id)
     return jsonify({
-        "token": access_token,
+        "access_token": access_token,
         "user": user.serialize()
     }), 201
