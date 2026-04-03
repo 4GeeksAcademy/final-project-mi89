@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import rigoImageUrl from "../assets/img/rigo-baby.jpg";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import PhotoCard from "../components/PhotoCard";
+import { useNavigate } from "react-router-dom";
 
-// Mock data — reemplazar con fetch al API cuando el backend esté listo
 const MOCK_PHOTOS = [
   {
     id: 1,
@@ -14,7 +13,7 @@ const MOCK_PHOTOS = [
     points: 10,
     timeAgo: "2 min ago",
     isHot: true,
-    type: "food",
+    category: "entree",
     image: "https://picsum.photos/seed/churrasco1/400/400",
   },
   {
@@ -26,20 +25,20 @@ const MOCK_PHOTOS = [
     points: 8,
     timeAgo: "8 min ago",
     isHot: false,
-    type: "food",
+    category: "app",
     image: "https://picsum.photos/seed/tostones1/400/400",
   },
   {
     id: 3,
-    dish: "Ropa vieja",
+    dish: "Tres leches",
     restaurant: "Latin Grill Tampa",
     username: "@sofia_m",
     likes: 9,
     points: 6,
     timeAgo: "15 min ago",
     isHot: false,
-    type: "food",
-    image: "https://picsum.photos/seed/ropav1/400/400",
+    category: "dessert",
+    image: "https://picsum.photos/seed/tresl1/400/400",
   },
   {
     id: 4,
@@ -50,32 +49,32 @@ const MOCK_PHOTOS = [
     points: 4,
     timeAgo: "22 min ago",
     isHot: false,
-    type: "drink",
+    category: "cocktail",
     image: "https://picsum.photos/seed/mojito1/400/400",
   },
   {
     id: 5,
-    dish: "Coquito",
+    dish: "Coquito Mocktail",
     restaurant: "Latin Grill Tampa",
     username: "@juan_k",
     likes: 18,
     points: 12,
     timeAgo: "30 min ago",
     isHot: true,
-    type: "drink",
+    category: "mocktail",
     image: "https://picsum.photos/seed/coquito1/400/400",
   },
   {
     id: 6,
-    dish: "Arroz con pollo",
+    dish: "Ropa vieja",
     restaurant: "Latin Grill Tampa",
     username: "@ana_p",
     likes: 5,
     points: 3,
     timeAgo: "45 min ago",
     isHot: false,
-    type: "food",
-    image: "https://picsum.photos/seed/arroz1/400/400",
+    category: "entree",
+    image: "https://picsum.photos/seed/ropav1/400/400",
   },
 ];
 
@@ -86,10 +85,25 @@ const REWARDS = [
   { name: "Free churrasco combo", points: 200 },
 ];
 
+const filters = [
+  { key: "all", label: "🍽️ All" },
+  { key: "app", label: "🥗 Appetizer" },
+  { key: "entree", label: "🥩 Entrée" },
+  { key: "dessert", label: "🍮 Dessert" },
+  { key: "cocktail", label: "🍹 Cocktail" },
+  { key: "mocktail", label: "🧃 Mocktail" },
+  { key: "mostLiked", label: "🔥 Most liked" },
+];
+
 export const Home = () => {
   const { store, dispatch } = useGlobalReducer();
+  const navigate = useNavigate();
 
-  // ── tu lógica original del backend ──
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [locationStatus, setLocationStatus] = useState("pending");
+  const [citySearch, setCitySearch] = useState("");
+  const [filter, setFilter] = useState("all");
+
   const loadMessage = async () => {
     try {
       const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -105,45 +119,40 @@ export const Home = () => {
     }
   };
 
-  // ── nuevo: location + filtros ──
-  const [locationStatus, setLocationStatus] = useState("pending");
-  const [citySearch, setCitySearch] = useState("");
-  const [filter, setFilter] = useState("all");
-
   useEffect(() => {
     loadMessage();
 
-    // Pedir ubicación al montar
+    // Detectar tamaño de pantalla
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+
+    // Pedir ubicación
     if (!navigator.geolocation) {
       setLocationStatus("denied");
-      return;
+    } else {
+      navigator.geolocation.getCurrentPosition(
+        () => setLocationStatus("granted"),
+        () => setLocationStatus("denied"),
+      );
     }
-    navigator.geolocation.getCurrentPosition(
-      () => setLocationStatus("granted"),
-      () => setLocationStatus("denied"),
-    );
+
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const filteredPhotos = MOCK_PHOTOS.filter((p) => {
-    if (filter === "drinks") return p.type === "drink";
+    if (filter === "all") return true;
     if (filter === "mostLiked") return p.likes >= 10;
-    return true;
+    return p.category === filter;
   }).sort((a, b) => (filter === "mostLiked" ? b.likes - a.likes : 0));
-
-  const filters = [
-    { key: "all", label: "🍽️ All dishes" },
-    { key: "drinks", label: "🍹 Drinks" },
-    { key: "mostLiked", label: "🔥 Most liked" },
-  ];
 
   return (
     <div style={{ background: "#0f0f0f", minHeight: "100vh", color: "#fff" }}>
-      {/* Location bar */}
+      {/* ── Location bar ── */}
       {locationStatus === "granted" && (
         <div
           style={{
             background: "#0d1f0d",
-            padding: "8px 24px",
+            padding: "8px 16px",
             fontSize: "13px",
             color: "#4caf50",
             borderBottom: "1px solid #1a3a1a",
@@ -156,27 +165,30 @@ export const Home = () => {
         <div
           style={{
             background: "#1a1a1a",
-            padding: "10px 24px",
+            padding: "10px 16px",
+            borderBottom: "1px solid #2a2a2a",
             display: "flex",
             alignItems: "center",
-            gap: "12px",
-            borderBottom: "1px solid #2a2a2a",
+            gap: "8px",
+            flexWrap: "wrap",
           }}
         >
-          <span style={{ fontSize: "13px" }}>📍 Search by city:</span>
+          <span style={{ fontSize: "13px" }}>📍</span>
           <input
             type="text"
-            placeholder="e.g. Miami, NYC..."
+            placeholder="Search city... e.g. Tampa"
             value={citySearch}
             onChange={(e) => setCitySearch(e.target.value)}
             style={{
+              flex: 1,
+              minWidth: "140px",
               background: "#2a2a2a",
               border: "1px solid #444",
               borderRadius: "8px",
-              padding: "6px 12px",
+              padding: "7px 12px",
               color: "#fff",
-              width: "200px",
               outline: "none",
+              fontSize: "14px",
             }}
           />
           <button
@@ -184,10 +196,11 @@ export const Home = () => {
               background: "#ff6b35",
               border: "none",
               borderRadius: "8px",
-              padding: "6px 16px",
+              padding: "7px 16px",
               color: "#fff",
               cursor: "pointer",
               fontWeight: "600",
+              fontSize: "14px",
             }}
           >
             Search
@@ -195,24 +208,30 @@ export const Home = () => {
         </div>
       )}
 
+      {/* ── Layout principal ── */}
       <div
         style={{
           display: "flex",
+          flexDirection: isMobile ? "column" : "row",
           maxWidth: "1200px",
           margin: "0 auto",
-          padding: "24px",
+          padding: isMobile ? "16px 12px" : "24px",
           gap: "24px",
         }}
       >
-        {/* Feed principal */}
-        <div style={{ flex: 1 }}>
-          {/* Filtros */}
+        {/* ── Feed ── */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Filtros — scroll horizontal en mobile */}
           <div
             style={{
               display: "flex",
               gap: "8px",
-              marginBottom: "24px",
-              flexWrap: "wrap",
+              marginBottom: "20px",
+              overflowX: "auto",
+              flexWrap: isMobile ? "nowrap" : "wrap",
+              paddingBottom: "6px",
+              WebkitOverflowScrolling: "touch",
+              scrollbarWidth: "none",
             }}
           >
             {filters.map(({ key, label }) => (
@@ -220,14 +239,16 @@ export const Home = () => {
                 key={key}
                 onClick={() => setFilter(key)}
                 style={{
-                  padding: "8px 18px",
+                  padding: isMobile ? "7px 14px" : "8px 18px",
                   borderRadius: "20px",
                   cursor: "pointer",
-                  fontSize: "13px",
+                  fontSize: isMobile ? "12px" : "13px",
+                  flexShrink: 0,
                   border: filter === key ? "none" : "1px solid #333",
                   background: filter === key ? "#ff6b35" : "#1a1a1a",
                   color: "#fff",
                   fontWeight: filter === key ? "600" : "400",
+                  whiteSpace: "nowrap",
                 }}
               >
                 {label}
@@ -239,22 +260,40 @@ export const Home = () => {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "16px",
+              gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr 1fr",
+              gap: isMobile ? "10px" : "16px",
             }}
           >
             {filteredPhotos.map((photo) => (
               <PhotoCard key={photo.id} photo={photo} />
             ))}
           </div>
+
+          {/* Estado vacío */}
+          {filteredPhotos.length === 0 && (
+            <div
+              style={{
+                textAlign: "center",
+                padding: "60px 20px",
+                color: "#555",
+              }}
+            >
+              <div style={{ fontSize: "40px", marginBottom: "12px" }}>📭</div>
+              <p style={{ fontSize: "14px" }}>
+                No photos yet in this category.
+                <br />
+                Be the first to upload!
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Sidebar */}
+        {/* ── Sidebar ── */}
         <div
           style={{
-            width: "280px",
+            width: isMobile ? "100%" : "280px",
             display: "flex",
-            flexDirection: "column",
+            flexDirection: isMobile ? "column" : "column",
             gap: "16px",
           }}
         >
@@ -276,7 +315,7 @@ export const Home = () => {
                 fontSize: "13px",
                 color: "#aaa",
                 marginBottom: "10px",
-                lineHeight: "1.5",
+                lineHeight: "1.6",
               }}
             >
               Upload a photo of your dish and earn points you can redeem here.
@@ -291,12 +330,14 @@ export const Home = () => {
               Earn +10 pts per photo · +2 pts per like
             </p>
             <button
+              onClick={() => navigate("/restaurant/1/upload")}
+              // TODO: reemplazar 1 por restaurantId del store cuando el login esté listo
               style={{
                 width: "100%",
                 background: "#ff6b35",
                 border: "none",
                 borderRadius: "8px",
-                padding: "12px",
+                padding: "13px",
                 color: "#fff",
                 fontSize: "15px",
                 fontWeight: "600",
@@ -334,7 +375,7 @@ export const Home = () => {
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
-                  padding: "8px 0",
+                  padding: "9px 0",
                   borderBottom: "1px solid #2a2a2a",
                   fontSize: "13px",
                 }}
@@ -359,7 +400,7 @@ export const Home = () => {
             <div style={{ fontWeight: "600", marginBottom: "8px" }}>
               Weekly competition 🏆
             </div>
-            <p style={{ fontSize: "13px", color: "#aaa", lineHeight: "1.5" }}>
+            <p style={{ fontSize: "13px", color: "#aaa", lineHeight: "1.6" }}>
               Top snapper at Latin Grill Tampa this week wins a{" "}
               <span style={{ color: "#ff6b35", fontWeight: "600" }}>
                 free churrasco dinner for 2
