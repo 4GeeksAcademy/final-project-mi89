@@ -10,10 +10,18 @@ export const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    function submitCredentials(e) {
+    async function submitCredentials(e) {
         e.preventDefault();
-        logInType === "Log In" && login(email, password);
-        logInType === "Sign Up" && signup(userType, email, password);
+        if (logInType === "Log In") {
+            await login(email, password);
+        }
+        if (logInType === "Sign Up") {
+            await signup(userType, email, password);
+            await login(email, password);
+        }
+        if (store.userToken === undefined) {
+            await logout()
+        }
         console.log("User " + email + " is trying to " + logInType);
     }
 
@@ -23,16 +31,20 @@ export const Login = () => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: email, password: password })
         })
-
-        if (!resp.ok) throw Error("There was a problem in the login request")
-
-        if (resp.status === 401) {
-            throw ("Invalid credentials")
-        }
-        else if (resp.status === 400) {
-            throw ("Invalid email, or password format")
-        }
         const data = await resp.json()
+        // if (!resp.ok) {
+        //     // console.error("Backend error:", data);
+
+        //     if (resp.status === 401) {
+        //         throw new Error("Invalid credentials");
+        //     } else if (resp.status === 400) {
+        //         throw new Error("Invalid email or password format");
+        //     } else {
+        //         throw new Error(data.msg || "Login failed");
+        //     }
+        // }
+
+
         // Save your token in the localStorage
         // Also you should set your user into the store using the setItem function
         localStorage.setItem("jwt-token", data.access_token);
@@ -61,10 +73,6 @@ export const Login = () => {
         const data = await resp.json()
         // Save your token in the localStorage
         // Also you should set your user into the store using the setItem function
-        localStorage.setItem("jwt-token", data.access_token);
-
-        dispatch({ type: "set_userToken", payload: data.access_token })
-        console.log("token after signing up:", data.access_token)
 
         return data
     }
@@ -81,8 +89,8 @@ export const Login = () => {
         <div>
             {store.userToken === null ?
                 (<form onSubmit={submitCredentials} className="mt-5 pt-5">
-                    <h2>{userType} {logInType}</h2>
-                    <label>I am a restaurant owner.
+                    <h2>{logInType === "Sign Up" && userType} {logInType}</h2>
+                    {logInType === "Sign Up" && <label><strong>I am a restaurant owner.</strong>
                         <input
                             type="checkbox"
                             name="userIsOwner"
@@ -95,7 +103,7 @@ export const Login = () => {
                                 }
                             }}
                         />
-                    </label> <br />
+                    </label>} <br />
                     <small>{logInType === "Log In" ? "Don't" : "Already"} have an account? <span className="text-primary" onClick={() => { logInType === "Log In" ? setLogInType("Sign Up") : setLogInType("Log In") }}>Click here to {logInType === "Log In" ? "create one." : "log in."}</span></small> <br />
                     <label>Email:
                         <input
