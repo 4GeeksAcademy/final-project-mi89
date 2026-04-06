@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import String, Boolean, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import List
 
 # For password security
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -39,3 +40,12 @@ class User(db.Model):
             "email": self.email,
             # do not serialize the password, its a security breach
         }
+
+class Customer(db.model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    photos: Mapped[List["Photo"]
+                             ] = relationship(back_populates="user")
+    
+class Photo(db.model):
+    id: Mapped[int] = mapped_column(primary_key=True)
