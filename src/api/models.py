@@ -23,6 +23,12 @@ class User(db.Model):
         "password", String(256), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
 
+    # Allows Customer and Owner tables to inherit everything from User
+    __mapper_args__ = {
+        "polymorphic_on": user_type,
+        "polymorphic_identity": "user",
+    }
+
     @hybrid_property
     def password(self):
         return self._password
@@ -43,18 +49,30 @@ class User(db.Model):
         }
 
 
-class Customer(db.Model):
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+class Customer(User):
+    __tablename__ = "customer"
+
+    id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+    
     photos: Mapped[List["Photo"]
                    ] = relationship(back_populates="customer")
     points: Mapped[List["Point"]
                    ] = relationship(back_populates="customer")
+    
+    __mapper_args__ = {
+        "polymorphic_identity": "customer",
+    }
 
 
-class Owner(db.Model):
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+class Owner(User):
+    __tablename__ = "owner"
+
+    id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
+
+    __mapper_args__ = {
+        "polymorphic_identity": "customer",
+    }
+
     # restaurants: Mapped[List["Restaurant"]
     #                ] = relationship(back_populates="owner")
 
@@ -99,4 +117,21 @@ class Point(db.Model):
 #     photos: Mapped[List["Photo"]
 #                    ] = relationship(back_populates="restaurant")
 #     owner: Mapped["Owner"] = relationship(back_populates="restaurants")
+
+
+#OLD VERSION OF CUSTOMER BEFORE I TRIED TO MAKE IT INHERIT FROM USER:
+# class Customer(User):
+#     id: Mapped[int] = mapped_column(primary_key=True)
+#     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+#     photos: Mapped[List["Photo"]
+#                    ] = relationship(back_populates="customer")
+#     points: Mapped[List["Point"]
+#                    ] = relationship(back_populates="customer")
+
+# OLD VERSION OF OWNER:
+# class Owner(db.Model):
+#     id: Mapped[int] = mapped_column(primary_key=True)
+#     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+#     # restaurants: Mapped[List["Restaurant"]
+#     #                ] = relationship(back_populates="owner")
 
