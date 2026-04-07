@@ -70,7 +70,7 @@ class Owner(User):
     id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
 
     __mapper_args__ = {
-        "polymorphic_identity": "customer",
+        "polymorphic_identity": "owner",
     }
 
     # restaurants: Mapped[List["Restaurant"]
