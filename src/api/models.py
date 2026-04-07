@@ -55,24 +55,16 @@ class Customer(db.Model):
 class Owner(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    restaurants: Mapped[List["Restaurant"]
-                   ] = relationship(back_populates="owner")
-    
-
-class Restaurant(db.Model):
-    id: Mapped[int] = mapped_column(primary_key=True)
-    owner_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    photos: Mapped[List["Photo"]
-                   ] = relationship(back_populates="restaurant")
-    owner: Mapped["Owner"] = relationship(back_populates="restaurants")
+    # restaurants: Mapped[List["Restaurant"]
+    #                ] = relationship(back_populates="owner")
 
 
 class Photo(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     customer_id: Mapped[int] = mapped_column(ForeignKey("customer.id"))
-    restaurant_id: Mapped[int] = mapped_column(ForeignKey("restaurant.id"))
+    # restaurant_id: Mapped[int] = mapped_column(ForeignKey("restaurant.id"))
     customer: Mapped["Customer"] = relationship(back_populates="photos")
-    restaurant: Mapped["Restaurant"] = relationship(back_populates="photos")
+    # restaurant: Mapped["Restaurant"] = relationship(back_populates="photos")
     likes: Mapped[List["Like"]
                    ] = relationship(back_populates="photo")
     comments: Mapped[List["Comment"]
@@ -99,4 +91,12 @@ class Point(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     customer_id: Mapped[int] = mapped_column(ForeignKey("customer.id"))
     customer: Mapped["Customer"] = relationship(back_populates="points")
+
+
+# class Restaurant(db.Model):
+#     id: Mapped[int] = mapped_column(primary_key=True)
+#     owner_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+#     photos: Mapped[List["Photo"]
+#                    ] = relationship(back_populates="restaurant")
+#     owner: Mapped["Owner"] = relationship(back_populates="restaurants")
 

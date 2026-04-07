@@ -111,25 +111,6 @@ def signup():
     }), 201
 
 
-@api.route("/restaurant", methods=["POST"])
-@jwt_required()
-def add_restaurant(restaurant_id):
-    current_owner_id = get_jwt_identity()
-    if current_owner_id is None:
-        return jsonify({"message": "Invalid or missing owner id."}), 400
-    owner = db.session.get(Owner, current_owner_id)
-    restaurant = db.session.get(Restaurant, restaurant_id)
-    if owner is None or restaurant is None:
-        return jsonify({"message": "Invalid owner id or restaurant id"}), 404
-    restaurant = Restaurant(
-        owner_id=owner.id, restaurant=restaurant.id)
-    db.session.add(restaurant)
-
-    db.session.commit()
-    serialized_owner = owner.serialize()
-    return jsonify(serialized_owner), 201
-
-
 @api.route("/photo", methods=["POST"])
 @jwt_required()
 def post_photo(photo_id):
@@ -211,3 +192,23 @@ def add_point():
     db.session.commit()
     
     return jsonify(customer.serialize()), 201
+
+
+# @api.route("/restaurant", methods=["POST"])
+# @jwt_required()
+# def add_restaurant(restaurant_id):
+#     current_owner_id = get_jwt_identity()
+#     if current_owner_id is None:
+#         return jsonify({"message": "Invalid or missing owner id."}), 400
+#     owner = db.session.get(Owner, current_owner_id)
+#     restaurant = db.session.get(Restaurant, restaurant_id)
+#     if owner is None or restaurant is None:
+#         return jsonify({"message": "Invalid owner id or restaurant id"}), 404
+#     restaurant = Restaurant(
+#         owner_id=owner.id, restaurant=restaurant.id)
+#     db.session.add(restaurant)
+
+#     db.session.commit()
+#     serialized_owner = owner.serialize()
+#     return jsonify(serialized_owner), 201
+
