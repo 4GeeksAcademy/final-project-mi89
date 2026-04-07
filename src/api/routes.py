@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User
+from api.models import db, User, Customer, Owner, Photo, Like, Comment, Point
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from sqlalchemy import select
@@ -109,3 +109,105 @@ def signup():
         "access_token": access_token,
         "user": user.serialize()
     }), 201
+
+
+@api.route("/restaurant", methods=["POST"])
+@jwt_required()
+def add_restaurant(restaurant_id):
+    current_owner_id = get_jwt_identity()
+    if current_owner_id is None:
+        return jsonify({"message": "Invalid or missing owner id."}), 400
+    owner = db.session.get(Owner, current_owner_id)
+    restaurant = db.session.get(Restaurant, restaurant_id)
+    if owner is None or restaurant is None:
+        return jsonify({"message": "Invalid owner id or restaurant id"}), 404
+    restaurant = Restaurant(
+        owner_id=owner.id, restaurant=restaurant.id)
+    db.session.add(restaurant)
+
+    db.session.commit()
+    serialized_owner = owner.serialize()
+    return jsonify(serialized_owner), 201
+
+
+@api.route("/photo", methods=["POST"])
+@jwt_required()
+def post_photo(photo_id):
+    current_customer_id = get_jwt_identity()
+    if current_customer_id is None:
+        return jsonify({"message": "Invalid or missing customer id."}), 400
+    customer = db.session.get(Customer, current_customer_id)
+    photo = db.session.get(Photo, photo_id)
+    if customer is None or photo is None:
+        return jsonify({"message": "Invalid customer id or photo id"}), 404
+    photo = Photo(
+        customer_id=customer.id, photo=photo.id)
+    db.session.add(photo)
+
+    db.session.commit()
+    seralized_customer = customer.serialize()
+    return jsonify(seralized_customer), 201
+
+
+@api.route("/like/<int:photo_id>", methods=["POST"])
+def like_photo(photo_id):
+    current_user_id = get_jwt_identity()
+    if current_user_id is None:
+        return jsonify({"message": "Invalid or missing user id."}), 400
+
+    user = db.session.get(User, current_user_id)
+    photo = db.session.get(Photo, photo_id)
+    if not user or not photo:
+        return jsonify({"message": "Invalid user or photo"}), 404
+
+    like = request.json.get("like")
+    if user is None or like is None:
+        return jsonify({"message": "Invalid user id or missing like"}), 404
+    new_like = Like(
+        photo_id=photo.id, customer_id=user.id)
+    db.session.add(new_like)
+    db.session.commit()
+    return jsonify({"message": "Like added successfully"}), 201
+
+
+@api.route("/comment/<int:photo_id>", methods=["POST"])
+def comment_on_photo(photo_id):
+    current_user_id = get_jwt_identity()
+    if current_user_id is None:
+        return jsonify({"message": "Invalid or missing user id."}), 400
+
+    user = db.session.get(User, current_user_id)
+    photo = db.session.get(Photo, photo_id)
+    if not user or not photo:
+        return jsonify({"message": "Invalid user or photo"}), 404
+
+    comment = request.json.get("comment")
+    if user is None or comment is None:
+        return jsonify({"message": "Invalid user id, or comment is blank"}), 404
+    new_comment = Comment(
+        photo_id=photo.id, customer_id=user.id, comment=comment)
+    db.session.add(new_comment)
+    db.session.commit()
+    return jsonify({"message": "Comment added successfully"}), 201
+
+
+@api.route("/point", methods=["POST"])
+@jwt_required()
+def add_point():
+    current_user_id = get_jwt_identity()
+    if current_user_id is None:
+        return jsonify({"message": "Invalid or missing user id."}), 400
+
+    user = db.session.get(User, current_user_id)
+    if not user or not user.user_type != "customer":
+        return jsonify({"message": "Invalid user or user is not a customer."}), 403
+
+    customer = db.session.query(Customer).filter_by(user_id=user.id).first()
+    if not customer:
+        return jsonify({"message": "Customer not found"}), 404
+    
+    new_point = Point(customer_id=customer.id)
+    db.session.add(new_point)
+    db.session.commit()
+    
+    return jsonify(customer.serialize()), 201

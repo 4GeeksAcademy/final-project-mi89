@@ -19,7 +19,8 @@ class User(db.Model):
         String(15), unique=False, nullable=False)
     email: Mapped[str] = mapped_column(
         String(120), unique=True, nullable=False)
-    _password: Mapped[str] = mapped_column("password", String(256), nullable=False)
+    _password: Mapped[str] = mapped_column(
+        "password", String(256), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
 
     @hybrid_property
@@ -41,11 +42,61 @@ class User(db.Model):
             # do not serialize the password, its a security breach
         }
 
-class Customer(db.model):
+
+class Customer(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     photos: Mapped[List["Photo"]
-                             ] = relationship(back_populates="user")
-    
-class Photo(db.model):
+                   ] = relationship(back_populates="customer")
+    points: Mapped[List["Point"]
+                   ] = relationship(back_populates="customer")
+
+
+class Owner(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    restaurants: Mapped[List["Restaurant"]
+                   ] = relationship(back_populates="owner")
+    
+
+class Restaurant(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    photos: Mapped[List["Photo"]
+                   ] = relationship(back_populates="restaurant")
+    owner: Mapped["Owner"] = relationship(back_populates="restaurants")
+
+
+class Photo(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    customer_id: Mapped[int] = mapped_column(ForeignKey("customer.id"))
+    restaurant_id: Mapped[int] = mapped_column(ForeignKey("restaurant.id"))
+    customer: Mapped["Customer"] = relationship(back_populates="photos")
+    restaurant: Mapped["Restaurant"] = relationship(back_populates="photos")
+    likes: Mapped[List["Like"]
+                   ] = relationship(back_populates="photo")
+    comments: Mapped[List["Comment"]
+                   ] = relationship(back_populates="photo")
+
+
+class Like(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    photo_id: Mapped[int] = mapped_column(ForeignKey("photo.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    photo: Mapped["Photo"] = relationship(back_populates="likes")
+
+
+class Comment(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    comment: Mapped[str] = mapped_column(
+        String(300), unique=False, nullable=False)
+    photo_id: Mapped[int] = mapped_column(ForeignKey("photo.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    photo: Mapped["Photo"] = relationship(back_populates="comments")
+
+
+class Point(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    customer_id: Mapped[int] = mapped_column(ForeignKey("customer.id"))
+    customer: Mapped["Customer"] = relationship(back_populates="points")
+
