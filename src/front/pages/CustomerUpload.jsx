@@ -1,139 +1,342 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+
+const BACKEND = "";
 
 const CATEGORIES = [
-    { key: "app",      label: "🥗 Appetizer" },
-    { key: "entree",   label: "🥩 Entrée"    },
-    { key: "dessert",  label: "🍮 Dessert"   },
-    { key: "cocktail", label: "🍹 Cocktail"  },
-    { key: "mocktail", label: "🧃 Mocktail"  },
+  { value: "app", label: "🥗 Appetizer" },
+  { value: "entree", label: "🥩 Entrée" },
+  { value: "dessert", label: "🍮 Dessert" },
+  { value: "cocktail", label: "🍹 Cocktail" },
+  { value: "mocktail", label: "🧃 Mocktail" },
 ];
 
-const CustomerUpload = () => {
-    const { id: restaurantId } = useParams();
-    const navigate = useNavigate();
+export default function CustomerUpload() {
+  const { id: restaurantId } = useParams();
 
-    const [preview, setPreview]     = useState(null);
-    const [file, setFile]           = useState(null);
-    const [dishName, setDishName]   = useState("");
-    const [category, setCategory]   = useState("");
-    const [uploading, setUploading] = useState(false);
-    const [success, setSuccess]     = useState(false);
-    const [error, setError]         = useState("");
+  const [photo, setPhoto] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [dish, setDish] = useState("");
+  const [category, setCategory] = useState("entree");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [pointsAwarded, setPointsAwarded] = useState(0);
+  const [uploadedAsGuest, setUploadedAsGuest] = useState(false);
 
-    const handleFileChange = (e) => {
-        const selected = e.target.files[0];
-        if (!selected) return;
-        setFile(selected);
-        setPreview(URL.createObjectURL(selected));
-    };
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setPhoto(file);
+    setPreview(URL.createObjectURL(file));
+    setError("");
+  };
 
-    const handleSubmit = async () => {
-        if (!file)     return setError("Please select a photo.");
-        if (!dishName) return setError("Please enter the dish name.");
-        if (!category) return setError("Please select a category.");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        setError("");
-        setUploading(true);
+    if (!photo) return setError("Please select a photo first.");
+    if (!dish.trim()) return setError("Please enter the dish name.");
 
-        const formData = new FormData();
-        formData.append("photo",         file);
-        formData.append("restaurant_id", restaurantId);
-        formData.append("dish_name",     dishName);
-        formData.append("category",      category);
+    setLoading(true);
+    setError("");
 
-        // TODO: descomentar cuando el backend esté listo
-        // const resp = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/photo/upload`, { method: "POST", body: formData });
-        // const data = await resp.json();
+    try {
+      const token = localStorage.getItem("tablesnap_token");
 
-        // Simulamos éxito por ahora
-        setTimeout(() => {
-            setUploading(false);
-            setSuccess(true);
-        }, 1500);
-    };
+      const formData = new FormData();
+      formData.append("photo", photo);
+      formData.append("dish_name", dish.trim());
+      formData.append("category", category);
+      formData.append("restaurant_id", restaurantId || 1);
 
-    if (success) return (
-        <div style={{ background: "#0f0f0f", minHeight: "100vh", color: "#fff", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px" }}>
-            <div style={{ fontSize: "70px", marginBottom: "16px" }}>🎉</div>
-            <h2 style={{ marginBottom: "8px" }}>Photo uploaded!</h2>
-            <p style={{ color: "#4caf50", fontSize: "20px", marginBottom: "8px" }}>+10 points earned!</p>
-            <p style={{ color: "#888", fontSize: "13px", marginBottom: "30px" }}>Keep snapping to climb the leaderboard 🏆</p>
-            <button
-                onClick={() => navigate("/")}
-                style={{ background: "#ff6b35", border: "none", borderRadius: "10px", padding: "12px 32px", color: "#fff", fontSize: "15px", fontWeight: "600", cursor: "pointer" }}>
-                See the feed
-            </button>
-        </div>
-    );
+      const headers = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
 
+      const res = await fetch(`${BACKEND}/api/photo/upload`, {
+        method: "POST",
+        headers,
+        body: formData,
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data.msg || `Server error (${res.status})`);
+      }
+
+      setPointsAwarded(data.points_awarded || 0);
+      setUploadedAsGuest(Boolean(data.uploaded_as_guest));
+      setSuccess(true);
+    } catch (err) {
+      setError(err.message || "Upload failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (success) {
     return (
-        <div style={{ background: "#0f0f0f", minHeight: "100vh", color: "#fff", display: "flex", flexDirection: "column", alignItems: "center", padding: "40px 20px", gap: "20px" }}>
+      <div style={{
+        minHeight: "100vh",
+        background: "#0f0f0f",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#fff",
+        textAlign: "center",
+        padding: "24px",
+        fontFamily: "'Segoe UI', sans-serif",
+      }}>
+        <div style={{ fontSize: 72, marginBottom: 16 }}>🎉</div>
 
-            {/* Header */}
-            <h2 style={{ marginBottom: "0" }}>📸 Latin Grill Tampa</h2>
-            <p style={{ color: "#aaa", fontSize: "13px", marginTop: "4px" }}>Upload your dish · Earn +10 pts per photo · +2 pts per like</p>
+        <h2 style={{ color: "#ff6b35", fontSize: 28, margin: "0 0 8px" }}>
+          Photo Uploaded!
+        </h2>
 
-            {/* Foto */}
-            <label style={{ cursor: "pointer", background: preview ? "transparent" : "#1a1a1a", border: preview ? "none" : "2px dashed #444", borderRadius: "12px", width: "100%", maxWidth: "360px", height: preview ? "auto" : "200px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {preview
-                    ? <img src={preview} alt="preview" style={{ width: "100%", maxWidth: "360px", borderRadius: "12px" }} />
-                    : <div style={{ textAlign: "center", color: "#888" }}>
-                        <div style={{ fontSize: "40px" }}>📷</div>
-                        <p style={{ fontSize: "14px", marginTop: "8px" }}>Tap to take or choose a photo</p>
-                      </div>
-                }
-                <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={handleFileChange}
-                    style={{ display: "none" }}
-                />
-            </label>
+        {uploadedAsGuest ? (
+          <p style={{ color: "#aaa", marginBottom: 24, maxWidth: 420 }}>
+            Your photo was uploaded successfully as a <strong style={{ color: "#ff6b35" }}>guest</strong>.
+          </p>
+        ) : (
+          <p style={{ color: "#aaa", marginBottom: 24 }}>
+            You earned <strong style={{ color: "#ff6b35" }}>+{pointsAwarded} points</strong> for your snap!
+          </p>
+        )}
 
-            {/* Nombre del plato */}
-            <input
-                type="text"
-                placeholder="Dish name (e.g. Churrasco, Mojito...)"
-                value={dishName}
-                onChange={e => setDishName(e.target.value)}
-                style={{ width: "100%", maxWidth: "360px", background: "#1a1a1a", border: "1px solid #333", borderRadius: "10px", padding: "12px 16px", color: "#fff", fontSize: "15px", outline: "none" }}
-            />
+        {preview && (
+          <img
+            src={preview}
+            alt="uploaded"
+            style={{
+              width: 200,
+              height: 200,
+              objectFit: "cover",
+              borderRadius: 16,
+              marginBottom: 24,
+              border: "3px solid #ff6b35",
+            }}
+          />
+        )}
 
-            {/* Categoría */}
-            <div style={{ width: "100%", maxWidth: "360px" }}>
-                <p style={{ fontSize: "13px", color: "#888", marginBottom: "10px" }}>Select category:</p>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                    {CATEGORIES.map(({ key, label }) => (
-                        <button
-                            key={key}
-                            onClick={() => setCategory(key)}
-                            style={{
-                                padding: "8px 16px", borderRadius: "20px", cursor: "pointer", fontSize: "13px",
-                                border: category === key ? "none" : "1px solid #333",
-                                background: category === key ? "#ff6b35" : "#1a1a1a",
-                                color: "#fff", fontWeight: category === key ? "600" : "400",
-                            }}>
-                            {label}
-                        </button>
-                    ))}
-                </div>
-            </div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
+          <button
+            onClick={() => {
+              setSuccess(false);
+              setPhoto(null);
+              setPreview(null);
+              setDish("");
+              setCategory("entree");
+              setPointsAwarded(0);
+              setUploadedAsGuest(false);
+            }}
+            style={{
+              background: "#ff6b35",
+              color: "#fff",
+              border: "none",
+              borderRadius: 12,
+              padding: "12px 24px",
+              fontWeight: 700,
+              fontSize: 15,
+              cursor: "pointer",
+            }}
+          >
+            📸 Upload Another
+          </button>
 
-            {/* Error */}
-            {error && <p style={{ color: "#e53935", fontSize: "13px" }}>{error}</p>}
-
-            {/* Submit */}
-            <button
-                onClick={handleSubmit}
-                disabled={uploading}
-                style={{ width: "100%", maxWidth: "360px", background: uploading ? "#555" : "#ff6b35", border: "none", borderRadius: "10px", padding: "14px", color: "#fff", fontSize: "16px", fontWeight: "600", cursor: uploading ? "not-allowed" : "pointer" }}>
-                {uploading ? "Uploading... ⏳" : "Submit & Earn Points 🚀"}
-            </button>
-
+          <button
+            onClick={() => window.location.href = "/"}
+            style={{
+              background: "#222",
+              color: "#fff",
+              border: "1px solid #444",
+              borderRadius: 12,
+              padding: "12px 24px",
+              fontWeight: 700,
+              fontSize: 15,
+              cursor: "pointer",
+            }}
+          >
+            🏠 Go to Feed
+          </button>
         </div>
+      </div>
     );
-};
+  }
 
-export default CustomerUpload;
+  return (
+    <div style={{
+      minHeight: "100vh",
+      background: "#0f0f0f",
+      color: "#fff",
+      fontFamily: "'Segoe UI', sans-serif",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      padding: "32px 16px",
+    }}>
+      <div style={{
+        width: "100%",
+        maxWidth: 440,
+        background: "#1a1a1a",
+        borderRadius: 20,
+        padding: "28px 24px",
+        border: "1px solid #2a2a2a",
+      }}>
+        <h2 style={{ margin: "0 0 4px", color: "#ff6b35", textAlign: "center" }}>
+          📸 Snap Your Dish
+        </h2>
+
+        <p style={{ color: "#888", textAlign: "center", fontSize: 13, marginTop: 0, marginBottom: 24 }}>
+          Upload a photo at <strong style={{ color: "#ff6b35" }}>Latin Grill Tampa</strong>
+        </p>
+
+        <form onSubmit={handleSubmit}>
+          <label style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            background: preview ? "transparent" : "#111",
+            border: `2px dashed ${preview ? "#ff6b35" : "#444"}`,
+            borderRadius: 14,
+            padding: preview ? 0 : "32px 16px",
+            cursor: "pointer",
+            marginBottom: 18,
+            overflow: "hidden",
+            minHeight: 180,
+          }}>
+            {preview ? (
+              <img
+                src={preview}
+                alt="preview"
+                style={{ width: "100%", maxHeight: 260, objectFit: "cover", borderRadius: 12 }}
+              />
+            ) : (
+              <>
+                <div style={{ fontSize: 40, marginBottom: 8 }}>📷</div>
+                <span style={{ color: "#888", fontSize: 14 }}>Tap to take / select photo</span>
+              </>
+            )}
+
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+            />
+          </label>
+
+          {preview && (
+            <button
+              type="button"
+              onClick={() => { setPhoto(null); setPreview(null); }}
+              style={{
+                width: "100%",
+                background: "none",
+                border: "1px solid #444",
+                borderRadius: 8,
+                color: "#888",
+                padding: "7px",
+                cursor: "pointer",
+                fontSize: 13,
+                marginBottom: 16,
+              }}
+            >
+              ✕ Remove photo
+            </button>
+          )}
+
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ display: "block", fontSize: 13, color: "#aaa", marginBottom: 6 }}>
+              Dish Name *
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. Churrasco con tostones"
+              value={dish}
+              onChange={e => setDish(e.target.value)}
+              required
+              style={{
+                width: "100%",
+                background: "#111",
+                border: "1px solid #444",
+                borderRadius: 10,
+                padding: "12px 14px",
+                color: "#fff",
+                fontSize: 14,
+                outline: "none",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
+
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: "block", fontSize: 13, color: "#aaa", marginBottom: 6 }}>
+              Category
+            </label>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {CATEGORIES.map(c => (
+                <button
+                  key={c.value}
+                  type="button"
+                  onClick={() => setCategory(c.value)}
+                  style={{
+                    padding: "7px 14px",
+                    borderRadius: 20,
+                    border: category === c.value ? "none" : "1px solid #444",
+                    background: category === c.value ? "#ff6b35" : "#222",
+                    color: "#fff",
+                    fontWeight: category === c.value ? 700 : 400,
+                    cursor: "pointer",
+                    fontSize: 12,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {error && (
+            <div style={{
+              background: "#2a0000",
+              border: "1px solid #ff4444",
+              borderRadius: 8,
+              padding: "10px 14px",
+              fontSize: 13,
+              color: "#ff6b6b",
+              marginBottom: 14,
+            }}>
+              ⚠️ {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              background: loading ? "#555" : "linear-gradient(135deg, #ff6b00, #ff8c00)",
+              color: "#fff",
+              border: "none",
+              borderRadius: 12,
+              padding: "14px",
+              fontWeight: 700,
+              fontSize: 16,
+              cursor: loading ? "not-allowed" : "pointer",
+              boxShadow: loading ? "none" : "0 4px 16px rgba(255,107,0,0.4)",
+            }}
+          >
+            {loading ? "Uploading... ⏳" : "🚀 Upload Photo"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}

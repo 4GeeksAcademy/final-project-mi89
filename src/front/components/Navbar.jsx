@@ -7,11 +7,9 @@ export const Navbar = () => {
   return (
     <nav className="navbar navbar-dark bg-dark fixed-top">
       <div className="container-fluid">
-
         <Link className="navbar-brand" to="/">
           YummyEats
         </Link>
-
 
         <div className="d-flex align-items-center gap-2 ms-auto">
           {/* SEARCH */}
@@ -25,8 +23,6 @@ export const Navbar = () => {
             <button className="btn btn-success  ">Search</button>
           </form>
 
-
-
           {/* TOGGLER */}
           <button
             className="navbar-toggler"
@@ -36,12 +32,13 @@ export const Navbar = () => {
           >
             <span className="navbar-toggler-icon"></span>
           </button>
-
+ 
           {/* OFFCANVAS MENU */}
 
           <div
             className="offcanvas offcanvas-end text-bg-dark "
-            id="offcanvasNavbar" style={{ width: "300px" }}
+            id="offcanvasNavbar"
+            style={{ width: "300px" }}
           >
             <div className="offcanvas-header  ">
               <h5 className="offcanvas-title">Menu</h5>
@@ -53,7 +50,6 @@ export const Navbar = () => {
             </div>
 
             <div className="offcanvas-body  ">
-
               {/* LEFT SIDE LINKS */}
               <ul className="navbar-nav justify-content-end flex-grow-1 pe-3">
                 <li className="nav-item">
@@ -93,7 +89,11 @@ export const Navbar = () => {
                     <li>
                       <Link className="dropdown-item " to="/login">
                         <i className="fa-solid fa-user-plus me-2 "></i>
-                        {store.userToken === null ? <span>Log In or Sign Up</span> : <span>Log Out</span>}
+                        {store.userToken === null ? (
+                          <span>Log In or Sign Up</span>
+                        ) : (
+                          <span>Log Out</span>
+                        )}
                       </Link>
                     </li>
                   </ul>
@@ -102,7 +102,6 @@ export const Navbar = () => {
             </div>
           </div>
         </div>
-
       </div>
     </nav>
   );
