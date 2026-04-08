@@ -26,7 +26,7 @@ export const Login = () => {
     }
 
     const login = async (email, password) => {
-        const resp = await fetch(`https://curly-potato-7v99x7q67v46hg75-3001.app.github.dev/api/login`, {
+        const resp = await fetch(import.meta.env.VITE_BACKEND_URL + "/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: email, password: password })
@@ -56,7 +56,7 @@ export const Login = () => {
     }
 
     const signup = async (userType, email, password) => {
-        const resp = await fetch(`https://curly-potato-7v99x7q67v46hg75-3001.app.github.dev/api/signup`, {
+        const resp = await fetch(import.meta.env.VITE_BACKEND_URL + "/signup", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ user_type: userType, email: email, password: password })

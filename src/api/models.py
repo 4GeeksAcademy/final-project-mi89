@@ -24,10 +24,10 @@ class User(db.Model):
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
 
     # Allows Customer and Owner tables to inherit everything from User
-    __mapper_args__ = {
-        "polymorphic_on": user_type,
-        "polymorphic_identity": "user",
-    }
+    # __mapper_args__ = {
+    #     "polymorphic_on": user_type,
+    #     "polymorphic_identity": "user",
+    # }
 
     @hybrid_property
     def password(self):
@@ -49,44 +49,52 @@ class User(db.Model):
         }
 
 
-class Customer(User):
-    __tablename__ = "customer"
-
-    id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
-    
+class Customer(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    username: Mapped[str] = mapped_column(
+        String(25), unique=True, nullable=False)
     photos: Mapped[List["Photo"]
                    ] = relationship(back_populates="customer")
     points: Mapped[List["Point"]
                    ] = relationship(back_populates="customer")
-    
-    __mapper_args__ = {
-        "polymorphic_identity": "customer",
-    }
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "username": self.username,
+            "photos": self.photos
+        }
 
 
-class Owner(User):
-    __tablename__ = "owner"
+class Owner(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    restaurants = relationship(
+        "Restaurant", primaryjoin="Owner.id == Restaurant.owner_id")
+    # Mapped[List["Restaurant"]
 
-    id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
-
-    __mapper_args__ = {
-        "polymorphic_identity": "owner",
-    }
-
-    # restaurants: Mapped[List["Restaurant"]
-    #                ] = relationship(back_populates="owner")
+    def serialize(self):
+        return {
+            "id": self.id
+        }
 
 
 class Photo(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     customer_id: Mapped[int] = mapped_column(ForeignKey("customer.id"))
-    # restaurant_id: Mapped[int] = mapped_column(ForeignKey("restaurant.id"))
+    restaurant_id: Mapped[int] = mapped_column(ForeignKey("restaurant.id"))
     customer: Mapped["Customer"] = relationship(back_populates="photos")
-    # restaurant: Mapped["Restaurant"] = relationship(back_populates="photos")
+    restaurant: Mapped["Restaurant"] = relationship(back_populates="photos")
     likes: Mapped[List["Like"]
-                   ] = relationship(back_populates="photo")
+                  ] = relationship(back_populates="photo")
     comments: Mapped[List["Comment"]
-                   ] = relationship(back_populates="photo")
+                     ] = relationship(back_populates="photo")
+
+    def serialize(self):
+        return {
+            "id": self.id
+        }
 
 
 class Like(db.Model):
@@ -94,6 +102,11 @@ class Like(db.Model):
     photo_id: Mapped[int] = mapped_column(ForeignKey("photo.id"))
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     photo: Mapped["Photo"] = relationship(back_populates="likes")
+
+    def serialize(self):
+        return {
+            "id": self.id
+        }
 
 
 class Comment(db.Model):
@@ -104,22 +117,39 @@ class Comment(db.Model):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     photo: Mapped["Photo"] = relationship(back_populates="comments")
 
+    def serialize(self):
+        return {
+            "id": self.id
+        }
+
 
 class Point(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     customer_id: Mapped[int] = mapped_column(ForeignKey("customer.id"))
     customer: Mapped["Customer"] = relationship(back_populates="points")
 
-
-# class Restaurant(db.Model):
-#     id: Mapped[int] = mapped_column(primary_key=True)
-#     owner_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-#     photos: Mapped[List["Photo"]
-#                    ] = relationship(back_populates="restaurant")
-#     owner: Mapped["Owner"] = relationship(back_populates="restaurants")
+    def serialize(self):
+        return {
+            "id": self.id
+        }
 
 
-#OLD VERSION OF CUSTOMER BEFORE I TRIED TO MAKE IT INHERIT FROM USER:
+class Restaurant(db.Model):
+    id: Mapped[int] = mapped_column(primary_key=True)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("owner.id"))
+    photos: Mapped[List["Photo"]
+                   ] = relationship(back_populates="restaurant")
+    # owner: Mapped["Owner"] = relationship(back_populates="restaurants")
+    owner = relationship("Owner", back_populates="restaurants",
+                         primaryjoin="Owner.id == Restaurant.owner_id")
+
+    def serialize(self):
+        return {
+            "id": self.id
+        }
+
+
+# OLD VERSION OF CUSTOMER BEFORE I TRIED TO MAKE IT INHERIT FROM USER:
 # class Customer(User):
 #     id: Mapped[int] = mapped_column(primary_key=True)
 #     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
@@ -134,4 +164,3 @@ class Point(db.Model):
 #     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 #     # restaurants: Mapped[List["Restaurant"]
 #     #                ] = relationship(back_populates="owner")
-

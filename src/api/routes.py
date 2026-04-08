@@ -110,6 +110,23 @@ def signup():
         "user": user.serialize()
     }), 201
 
+@api.route("/customer", methods=["POST"])
+def new_customer():
+    user_id = request.json.get("user_id")
+    username = request.json.get("username")
+
+    customer = Customer(
+        user_id=user_id,
+        username=username,
+    )
+    db.session.add(customer)
+    db.session.commit()
+
+    return jsonify({
+        "user_id": user_id,
+        "customer": customer.serialize()
+    })
+
 
 @api.route("/photo", methods=["POST"])
 @jwt_required()
@@ -122,7 +139,7 @@ def post_photo(photo_id):
     if customer is None or photo is None:
         return jsonify({"message": "Invalid customer id or photo id"}), 404
     photo = Photo(
-        customer_id=customer.id, photo=photo.id)
+        customer_id=customer.id,)
     db.session.add(photo)
 
     db.session.commit()
