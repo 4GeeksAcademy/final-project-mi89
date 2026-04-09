@@ -36,5 +36,6 @@ export const router = createBrowserRouter(
         <Route path="/owner-dashboard" element={<OwnerDashboard />} />
         <Route path="/restaurant/:id/upload" element={<CustomerUpload />} />
       </Route>
+    </Route>
   )
 );
