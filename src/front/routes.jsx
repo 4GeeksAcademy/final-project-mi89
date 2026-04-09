@@ -13,6 +13,7 @@ import { Demo } from "./pages/Demo";
 import OwnerDashboard from "./pages/OwnerDashboard";
 import { Login } from "./pages/Login";
 import CustomerUpload from "./pages/CustomerUpload";
+import { Profile } from "./pages/Profile";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -34,6 +35,8 @@ export const router = createBrowserRouter(
       <Route path="/demo" element={<Demo />} />
       <Route path="/owner-dashboard" element={<OwnerDashboard />} />
       <Route path="/restaurant/:id/upload" element={<CustomerUpload />} />
+      <Route path="/profile" element={<Profile />} />
     </Route>
+    
   )
 );

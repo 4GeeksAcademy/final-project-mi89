@@ -72,10 +72,6 @@ export const Navbar = () => {
                     Settings
                   </Link>
                 </li>
-              </ul>
-
-              {/* ACCOUNT DROPDOWN (YOUR PART) */}
-              <ul className="navbar-nav mt-3  ">
                 <li className="nav-item dropdown">
                   <button
                     className="btn btn-secondary dropdown-toggle w-100"
@@ -86,8 +82,8 @@ export const Navbar = () => {
 
                   <ul className="dropdown-menu dropdown-menu-dark">
                     <li>
-                      <Link className="dropdown-item" to="/signup">
-                        Profile
+                      <Link className="dropdown-item" to="/profile">
+                        Profile: Costumer or Owner
                       </Link>
                     </li>
                     <li>
