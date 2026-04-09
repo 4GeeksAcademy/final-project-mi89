@@ -7,6 +7,9 @@ from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from sqlalchemy import select
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+import cloudinary
+import cloudinary.uploader
+cloudinary.config(secure=True)
 
 api = Blueprint('api', __name__)
 
@@ -48,6 +51,12 @@ def get_users():
     for user in all_users:
         user_dictionaries.append(user.serialize())
     return jsonify(user_dictionaries), 200
+
+
+@api.route("/user/<int:user_id>", methods=["GET"])
+def get_user(user_id):
+    current_user = db.session.get(User, user_id)
+    return jsonify(current_user(current_user.serialize)), 200
 
 
 @api.route("/user", methods=["POST"])
@@ -109,6 +118,7 @@ def signup():
         "access_token": access_token,
         "user": user.serialize()
     }), 201
+
 
 @api.route("/customer", methods=["POST"])
 def new_customer():
@@ -203,12 +213,63 @@ def add_point():
     customer = db.session.query(Customer).filter_by(user_id=user.id).first()
     if not customer:
         return jsonify({"message": "Customer not found"}), 404
-    
+
     new_point = Point(customer_id=customer.id)
     db.session.add(new_point)
     db.session.commit()
-    
+
     return jsonify(customer.serialize()), 201
+
+
+@api.route('/photo/upload', methods=['POST'])
+@jwt_required()
+def upload_photo():
+    """Recibe multipart/form-data con: photo (file), dish_name, category, restaurant_id"""
+    if 'photo' not in request.files:
+        return jsonify({"msg": "No photo file"}), 400
+
+    file = request.files['photo']
+    dish_name = request.form.get("dish_name", "Unknown Dish")
+    category = request.form.get("category", "entree")
+    restaurant_id = request.form.get("restaurant_id", 1)
+
+    # Subir a Cloudinary
+    result = cloudinary.uploader.upload(file, folder="tablesnap")
+    print(get_jwt_identity())
+    user = db.get_or_404(User, int(get_jwt_identity()))
+
+    # Guardar en DB
+    photo = Photo()
+    photo.cloudinary_url = result["secure_url"]
+    photo.cloudinary_id = result["public_id"]
+    photo.dish_name = dish_name
+    photo.category = category
+    photo.restaurant_id = int(restaurant_id)
+    photo.customer = user.customer
+    # Si viene JWT, guardamos el customer_id
+
+    db.session.add(photo)
+
+    # Dar 10 puntos al cliente (si está autenticado)
+    if photo.customer_id and photo.restaurant_id:
+        cp = Point.query.filter_by(
+            customer_id=photo.customer_id,
+            restaurant_id=photo.restaurant_id
+        ).first()
+        if not cp:
+            cp = Point(customer_id=photo.customer_id,
+                       restaurant_id=photo.restaurant_id, points=0)
+            db.session.add(cp)
+        cp.points += 10
+
+    db.session.commit()
+    return jsonify({"msg": "Photo uploaded!", "photo": photo.serialize()}), 201
+
+
+@api.route('/photos', methods=['GET'])
+def get_all_photos():
+    photos = Photo.query.order_by(Photo.created_at.desc()).limit(50).all()
+    return jsonify([p.serialize() for p in photos]), 200
 
 
 # @api.route("/restaurant", methods=["POST"])
@@ -228,4 +289,3 @@ def add_point():
 #     db.session.commit()
 #     serialized_owner = owner.serialize()
 #     return jsonify(serialized_owner), 201
-

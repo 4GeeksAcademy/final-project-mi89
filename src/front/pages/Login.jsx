@@ -7,6 +7,7 @@ export const Login = () => {
 
     const [logInType, setLogInType] = useState("Log In"); // Other value will be "Sign Up"
     const [userType, setUserType] = useState("Customer"); // Other value will be "Owner"
+    const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -17,6 +18,7 @@ export const Login = () => {
         }
         if (logInType === "Sign Up") {
             await signup(userType, email, password);
+            userType === "Customer" && await createCustomer(username)
             await login(email, password);
         }
         if (store.userToken === undefined) {
@@ -77,6 +79,18 @@ export const Login = () => {
         return data
     }
 
+    const createCustomer = async (username) => {
+        const resp = await fetch(import.meta.env.VITE_BACKEND_URL + "/customer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: username })
+        })
+
+        const data = await resp.json()
+
+        return data
+    }
+
     const logout = () => {
         localStorage.removeItem("jwt-token");
         dispatch({ type: "set_userToken", payload: null });
@@ -105,6 +119,13 @@ export const Login = () => {
                         />
                     </label>} <br />
                     <small>{logInType === "Log In" ? "Don't" : "Already"} have an account? <span className="text-primary" onClick={() => { logInType === "Log In" ? setLogInType("Sign Up") : setLogInType("Log In") }}>Click here to {logInType === "Log In" ? "create one." : "log in."}</span></small> <br />
+                    <label>Username:
+                        <input
+                            type="username"
+                            value={username}
+                            onChange={(e) => { setUsername(e.target.value) }}
+                        />
+                    </label> <br />
                     <label>Email:
                         <input
                             type="email"

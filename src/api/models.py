@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import String, Boolean, ForeignKey
+from sqlalchemy import String, Boolean, ForeignKey, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from datetime import datetime
 from typing import List
 
 # For password security
@@ -22,6 +23,8 @@ class User(db.Model):
     _password: Mapped[str] = mapped_column(
         "password", String(256), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
+    customer: Mapped["Customer"] = relationship(back_populates="user")
+    owner: Mapped["Owner"] = relationship(back_populates="user")
 
     # Allows Customer and Owner tables to inherit everything from User
     # __mapper_args__ = {
@@ -52,12 +55,11 @@ class User(db.Model):
 class Customer(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    username: Mapped[str] = mapped_column(
-        String(25), unique=True, nullable=False)
     photos: Mapped[List["Photo"]
                    ] = relationship(back_populates="customer")
     points: Mapped[List["Point"]
                    ] = relationship(back_populates="customer")
+    user: Mapped["User"] = relationship(back_populates="customer")
 
     def serialize(self):
         return {
@@ -72,6 +74,7 @@ class Owner(db.Model):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     restaurants = relationship(
         "Restaurant", primaryjoin="Owner.id == Restaurant.owner_id")
+    user: Mapped["User"] = relationship(back_populates="owner")
     # Mapped[List["Restaurant"]
 
     def serialize(self):
@@ -80,21 +83,76 @@ class Owner(db.Model):
         }
 
 
+# class Photo(db.Model):
+#     id: Mapped[int] = mapped_column(primary_key=True)
+#     customer_id: Mapped[int] = mapped_column(ForeignKey("customer.id"))
+#     restaurant_id: Mapped[int] = mapped_column(ForeignKey("restaurant.id"))
+#     customer: Mapped["Customer"] = relationship(back_populates="photos")
+#     restaurant: Mapped["Restaurant"] = relationship(back_populates="photos")
+#     likes: Mapped[List["Like"]
+#                   ] = relationship(back_populates="photo")
+#     comments: Mapped[List["Comment"]
+#                      ] = relationship(back_populates="photo")
+
+#     def serialize(self):
+#         return {
+#             "id": self.id
+#         }
+
+
 class Photo(db.Model):
-    id: Mapped[int] = mapped_column(primary_key=True)
-    customer_id: Mapped[int] = mapped_column(ForeignKey("customer.id"))
-    restaurant_id: Mapped[int] = mapped_column(ForeignKey("restaurant.id"))
-    customer: Mapped["Customer"] = relationship(back_populates="photos")
-    restaurant: Mapped["Restaurant"] = relationship(back_populates="photos")
-    likes: Mapped[List["Like"]
-                  ] = relationship(back_populates="photo")
-    comments: Mapped[List["Comment"]
-                     ] = relationship(back_populates="photo")
+    __allow_unmapped__ = True
+
+    id:             Mapped[int] = mapped_column(primary_key=True)
+    cloudinary_url: Mapped[str] = mapped_column(String(500), nullable=False)
+    cloudinary_id:  Mapped[str] = mapped_column(String(200), nullable=False)
+    dish_name:      Mapped[str] = mapped_column(String(120), nullable=False)
+    # app | entree | dessert | cocktail | mocktail
+    category:       Mapped[str] = mapped_column(String(50),  nullable=False)
+    created_at:     Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow)
+
+    restaurant_id: Mapped[int] = mapped_column(
+        ForeignKey("restaurant.id"), nullable=False)
+    customer_id:   Mapped[int | None] = mapped_column(
+        ForeignKey("customer.id"), nullable=True)
+
+    restaurant: Mapped["Restaurant"] = relationship(
+        # fix
+        "Restaurant", foreign_keys=[restaurant_id], back_populates="photos")
+    customer:   Mapped["Customer"] = relationship(
+        # fix
+        "Customer", foreign_keys=[customer_id],   back_populates="photos")
+    likes:      Mapped["list[Like]"] = relationship(
+        "Like",    back_populates="photo", cascade="all, delete")
+    comments:   Mapped["list[Comment]"] = relationship(
+        "Comment", back_populates="photo", cascade="all, delete")
 
     def serialize(self):
         return {
-            "id": self.id
+            "id":            self.id,
+            "image":         self.cloudinary_url,
+            "dish":          self.dish_name,
+            "category":      self.category,
+            "restaurant_id": self.restaurant_id,
+            # "restaurant":    self.restaurant.email if self.restaurant else "",
+            "customer_id":   self.customer_id,
+            "username":      f"@{self.customer.user.email.split('@')[0]}" if self.customer else "@guest",
+            "likes":         len(self.likes or []),
+            "isHot":         len(self.likes or []) >= 10,
+            "points":        len(self.likes or []) * 2 + 10,
+            "timeAgo":       self._time_ago(),
         }
+
+    def _time_ago(self):
+        diff = datetime.utcnow() - self.created_at
+        if diff.seconds < 60:
+            return f"{diff.seconds} sec ago"
+        if diff.seconds < 3600:
+            return f"{diff.seconds // 60} min ago"
+        if diff.seconds < 86400:
+            return f"{diff.seconds // 3600} hr ago"
+        return f"{diff.days} days ago"
 
 
 class Like(db.Model):
@@ -126,11 +184,21 @@ class Comment(db.Model):
 class Point(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     customer_id: Mapped[int] = mapped_column(ForeignKey("customer.id"))
-    customer: Mapped["Customer"] = relationship(back_populates="points")
+    # customer: Mapped["Customer"] = relationship(back_populates="points")
+
+    restaurant_id: Mapped[int] = mapped_column(
+        ForeignKey("restaurant.id"), nullable=False)
+
+    customer:   Mapped["User"] = relationship(
+        "Customer", foreign_keys=[customer_id],   back_populates="points")
+    restaurant: Mapped["Restaurant"] = relationship(
+        "Restaurant", foreign_keys=[restaurant_id])
 
     def serialize(self):
         return {
-            "id": self.id
+            "customer_id":   self.customer_id,
+            "restaurant_id": self.restaurant_id,
+            "points":        self.points,
         }
 
 
