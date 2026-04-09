@@ -7,6 +7,7 @@ export const Login = () => {
 
     const [logInType, setLogInType] = useState("Log In"); // Other value will be "Sign Up"
     const [userType, setUserType] = useState("Customer"); // Other value will be "Owner"
+    const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -17,6 +18,7 @@ export const Login = () => {
         }
         if (logInType === "Sign Up") {
             await signup(userType, email, password);
+            userType === "Customer" && await createCustomer(username)
             await login(email, password);
         }
         if (store.userToken === undefined) {
@@ -26,7 +28,7 @@ export const Login = () => {
     }
 
     const login = async (email, password) => {
-        const resp = await fetch(`https://curly-potato-7v99x7q67v46hg75-3001.app.github.dev/api/login`, {
+        const resp = await fetch(import.meta.env.VITE_BACKEND_URL + "/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: email, password: password })
@@ -56,7 +58,7 @@ export const Login = () => {
     }
 
     const signup = async (userType, email, password) => {
-        const resp = await fetch(`https://curly-potato-7v99x7q67v46hg75-3001.app.github.dev/api/signup`, {
+        const resp = await fetch(import.meta.env.VITE_BACKEND_URL + "/signup", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ user_type: userType, email: email, password: password })
@@ -73,6 +75,18 @@ export const Login = () => {
         const data = await resp.json()
         // Save your token in the localStorage
         // Also you should set your user into the store using the setItem function
+
+        return data
+    }
+
+    const createCustomer = async (username) => {
+        const resp = await fetch(import.meta.env.VITE_BACKEND_URL + "/customer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: username })
+        })
+
+        const data = await resp.json()
 
         return data
     }
@@ -105,6 +119,13 @@ export const Login = () => {
                         />
                     </label>} <br />
                     <small>{logInType === "Log In" ? "Don't" : "Already"} have an account? <span className="text-primary" onClick={() => { logInType === "Log In" ? setLogInType("Sign Up") : setLogInType("Log In") }}>Click here to {logInType === "Log In" ? "create one." : "log in."}</span></small> <br />
+                    <label>Username:
+                        <input
+                            type="username"
+                            value={username}
+                            onChange={(e) => { setUsername(e.target.value) }}
+                        />
+                    </label> <br />
                     <label>Email:
                         <input
                             type="email"
