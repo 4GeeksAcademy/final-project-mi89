@@ -36,7 +36,7 @@ def create_token():
     user = User.query.filter_by(email=email, password=password).first()
 
     if user is None:
-        # The user was not found on the database
+        # The user was not found on the databasegit
         return jsonify({"msg": "Bad email or password"}), 401
 
     # Create a new token with the user id inside
