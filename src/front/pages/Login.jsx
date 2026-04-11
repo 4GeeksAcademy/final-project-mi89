@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { Navbar } from "../components/Navbar";
 
@@ -10,6 +10,8 @@ export const Login = () => {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [userId, setUserId] = useState();
+
 
     async function submitCredentials(e) {
         e.preventDefault();
@@ -18,13 +20,15 @@ export const Login = () => {
         }
         if (logInType === "Sign Up") {
             await signup(userType, email, password);
-            userType === "Customer" && await createCustomer(username)
             await login(email, password);
+            // userType === "Customer" && await createCustomer(username, userId);
+            // userType === "Owner" && await createOwner(username, userId);
+            // I'm going to call the above lines inside getUser so they can access data.id directly instead of waiting for the state update to userId
         }
         if (store.userToken === undefined) {
             await logout()
         }
-        console.log("User " + email + " is trying to " + logInType);
+        console.log(userType + " " + username + " is trying to " + logInType);
     }
 
     const login = async (email, password) => {
@@ -54,6 +58,8 @@ export const Login = () => {
         dispatch({ type: "set_userToken", payload: data.access_token })
         console.log("token after logging in:", data.access_token)
 
+        await getUser()
+
         return data
     }
 
@@ -79,16 +85,47 @@ export const Login = () => {
         return data
     }
 
-    const createCustomer = async (username) => {
-        const resp = await fetch(import.meta.env.VITE_BACKEND_URL + "/customer", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: username })
+    const getUser = async () => {
+        const resp = await fetch(import.meta.env.VITE_BACKEND_URL + "/user", {
+            method: "GET",
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem("jwt-token") },
         })
 
         const data = await resp.json()
+        const id = data.id;
+        console.log("This is the user: ", data);
+        setUserId(id);
+        console.log("LOOK HERE - user ID state variable:", userId);
+        console.log("data.id is:", data.id);
 
-        return data
+        userType === "Customer" && await createCustomer(username, data.id);
+        userType === "Owner" && await createOwner(username, data.id);
+
+        return data;
+    }
+
+    const createCustomer = async (username, userId) => {
+        const resp = await fetch(import.meta.env.VITE_BACKEND_URL + "/customer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: username, user_id: userId })
+        })
+
+        const data = await resp.json();
+
+        return data;
+    }
+
+    const createOwner = async (username, userId) => {
+        const resp = await fetch(import.meta.env.VITE_BACKEND_URL + "/owner", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: username, user_id: userId })
+        })
+
+        const data = await resp.json();
+
+        return data;
     }
 
     const logout = () => {
@@ -98,6 +135,10 @@ export const Login = () => {
         setPassword("");
         console.log("token after logging out:", store.userToken);
     }
+
+    // useEffect(() => {
+    //     getUser()
+    // }, [token])
 
     return (
         <div>
