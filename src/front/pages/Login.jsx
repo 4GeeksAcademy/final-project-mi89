@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 import { Navbar } from "../components/Navbar";
+import { useNavigate } from "react-router";
 
 export const Login = () => {
     const { store, dispatch } = useGlobalReducer();
+
+    const navigate = useNavigate()
 
     const [logInType, setLogInType] = useState("Log In"); // Other value will be "Sign Up"
     const [userType, setUserType] = useState("Customer"); // Other value will be "Owner"
@@ -60,6 +63,8 @@ export const Login = () => {
 
         await getUser()
 
+        navigate("/");
+
         return data
     }
 
@@ -85,6 +90,12 @@ export const Login = () => {
         return data
     }
 
+    // const handleSubmit = () => {
+    //     if (logInType === "Log In") {
+    //         navigate("/")
+    //     }
+    // }
+
     const getUser = async () => {
         const resp = await fetch(import.meta.env.VITE_BACKEND_URL + "/user", {
             method: "GET",
@@ -98,8 +109,10 @@ export const Login = () => {
         console.log("LOOK HERE - user ID state variable:", userId);
         console.log("data.id is:", data.id);
 
-        userType === "Customer" && await createCustomer(username, data.id);
-        userType === "Owner" && await createOwner(username, data.id);
+        if (logInType === "Sign Up") {
+            userType === "Customer" && await createCustomer(username, data.id);
+            userType === "Owner" && await createOwner(username, data.id);
+        }
 
         return data;
     }
@@ -181,7 +194,7 @@ export const Login = () => {
                             onChange={(e) => { setPassword(e.target.value) }}
                         />
                     </label>
-                    <input type="submit" />
+                    <button className="btn btn-primary" type="submit" >{logInType}</button>
                 </form>)
                 : (<button type="button" onClick={logout} className="pt-5 mt-5">Log Out</button>)}
         </div>
