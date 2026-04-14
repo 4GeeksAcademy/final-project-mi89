@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export const Navbar = () => {
   const { store } = useGlobalReducer();
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
 
   return (
     <nav className="navbar navbar-dark bg-dark fixed-top">
@@ -11,7 +13,6 @@ export const Navbar = () => {
         <Link className="navbar-brand" to="/">
           YummyEats
         </Link>
-
 
         <div className="d-flex align-items-center gap-2 ms-auto">
           {/* SEARCH */}
@@ -22,10 +23,8 @@ export const Navbar = () => {
               placeholder="Search"
               style={{ width: "350px" }}
             />
-            <button className="btn btn-success  ">Search</button>
+            <button type="button" className="btn btn-success">Search</button>
           </form>
-
-
 
           {/* TOGGLER */}
           <button
@@ -38,10 +37,10 @@ export const Navbar = () => {
           </button>
 
           {/* OFFCANVAS MENU */}
-
           <div
             className="offcanvas offcanvas-end text-bg-dark "
-            id="offcanvasNavbar" style={{ width: "300px" }}
+            id="offcanvasNavbar"
+            style={{ width: "300px" }}
           >
             <div className="offcanvas-header  ">
               <h5 className="offcanvas-title">Menu</h5>
@@ -72,34 +71,63 @@ export const Navbar = () => {
                     Settings
                   </Link>
                 </li>
-                <li className="nav-item dropdown">
-                  <button
-                    className="btn btn-secondary dropdown-toggle w-100"
-                    data-bs-toggle="dropdown"
-                  >
-                    Account
-                  </button>
 
-                  <ul className="dropdown-menu dropdown-menu-dark">
-                    <li>
-                      <Link className="dropdown-item" to="/profile">
-                        Profile: Costumer or Owner
-                      </Link>
-                    </li>
-                    <li>
-                      <Link className="dropdown-item " to="/login">
-                        <i className="fa-solid fa-user-plus me-2 "></i>
-                        {store.userToken === null ? <span>Log In or Sign Up</span> : <span>Log Out</span>}
-                      </Link>
-                    </li>
-                  </ul>
+                {/* ACCOUNT DROPDOWN - FIXED */}
+                <li className="nav-item my-2 me-3">
+                  <button
+                    className="btn btn-secondary w-100"
+                    onClick={() => setShowAccountMenu(!showAccountMenu)}
+                    style={{
+                      textAlign: "left",
+                      backgroundColor: "#6c757d",
+                      border: "none"
+                    }}
+                  >
+                    Account ▼
+                  </button>
                 </li>
-              </ul>
-            </div>
+
+                {/* DROPDOWN MENU - Shows/Hides based on state */}
+                {showAccountMenu && (
+                  <ul
+                    className="list-unstyled ms-3 mt-3"
+                    style={{
+                      backgroundColor: "#495057",
+                      borderRadius: "5px",
+                      padding: "10px 5px"
+                    }}
+                  >
+                    
+                    <li>
+                      <Link
+                        className="nav-link"
+                        to="/profile"
+                        onClick={() => setShowAccountMenu(false)}
+                      >
+                        👤 My Profile
+                      </Link>
+                    </li>
+
+                    <li>
+                      <Link
+                        className="nav-link"
+                        to="/login"
+                        onClick={() => setShowAccountMenu(false)}
+                      >
+                        <i className="fa-solid fa-user-plus me-2 "></i>
+                        {store.userToken === null ? "Log In or Sign Up" : "Log Out"}
+                      </Link>
+                    </li>
+                  
+                  </ul>
+                )}
+
+            </ul>
           </div>
         </div>
-
       </div>
-    </nav>
+
+    </div>
+    </nav >
   );
 };

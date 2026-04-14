@@ -18,7 +18,7 @@ export const Login = () => {
         }
         if (logInType === "Sign Up") {
             await signup(userType, email, password);
-            userType === "Customer" && await createCustomer(username)
+            // userType === "Customer" && await createCustomer(username)
             await login(email, password);
         }
         if (store.userToken === undefined) {
@@ -79,17 +79,17 @@ export const Login = () => {
         return data
     }
 
-    const createCustomer = async (username) => {
-        const resp = await fetch(import.meta.env.VITE_BACKEND_URL + "/customer", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: username })
-        })
+    // const createCustomer = async (username) => {
+    //     const resp = await fetch(import.meta.env.VITE_BACKEND_URL + "/customer", {
+    //         method: "POST",
+    //         headers: { "Content-Type": "application/json" },
+    //         body: JSON.stringify({ username: username })
+    //     })
 
-        const data = await resp.json()
+    //     const data = await resp.json()
 
-        return data
-    }
+    //     return data
+    // }
 
     const logout = () => {
         localStorage.removeItem("jwt-token");
