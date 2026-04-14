@@ -18,6 +18,6 @@ const Qrcode = ({ restaurantId }) => {
             </p>
         </div>
     );
-};
+}; 
 
 export default Qrcode;
