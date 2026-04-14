@@ -19,7 +19,7 @@ export const Login = () => {
 
     async function submitCredentials(e) {
         e.preventDefault();
-        if (logInType === "Log In" && username != "" && email != "" && password != "" ) {
+        if (logInType === "Log In" && email != "" && password != "") {
             await login(email, password);
         }
         if (logInType === "Sign Up") {
@@ -32,7 +32,7 @@ export const Login = () => {
         if (store.userToken === undefined) {
             await logout()
         }
-        console.log(userType + " " + username + " is trying to " + logInType);
+        console.log(userType + " with email " + email + " is trying to " + logInType);
     }
 
     const login = async (email, password) => {
@@ -64,7 +64,7 @@ export const Login = () => {
 
         await getUser()
 
-        if (username != "" && email != "" && password != "") { navigate("/"); }
+        if (email != "" && password != "") { navigate("/"); }
 
         return data
     }
@@ -174,14 +174,14 @@ export const Login = () => {
                                 }}
                             />
                         </label> : <label className="w-100 text-center"><strong>Customers or owners can log in here.</strong></label>} <br />
-                        <label className="w-100">Username:
+                        {logInType === "Sign Up" && <label className="w-100">Username:
                             <input
                                 className="w-100"
                                 type="username"
                                 value={username}
                                 onChange={(e) => { setUsername(e.target.value) }}
                             />
-                        </label> <br />
+                        </label>} <br />
                         <label className="w-100">Email:
                             <input
                                 className="w-100"
