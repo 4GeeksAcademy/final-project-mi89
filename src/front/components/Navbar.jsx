@@ -1,10 +1,61 @@
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export const Navbar = () => {
-  const { store } = useGlobalReducer();
+  const { store, dispatch } = useGlobalReducer();
+
+  function logOut() {
+    dispatch({ type: "set_loggingOut", payload: true })
+    // This store variable will equal true only when the user clicks Log Out from the navbar, then it will immediately become false because of the useEffect inside Login.jsx, which will then log out and navigate to the home page.
+  }
   const [showAccountMenu, setShowAccountMenu] = useState(false);
+
+  const [userType, setUserType] = useState("");
+  const navigate = useNavigate()
+  const handleProfileClick = () => {
+
+    // alert()
+    // console.log(userType)
+ console.log("userType value:", userType);
+    if (userType === "Customer") {
+
+      navigate("/customer-profile")
+
+    } else if (userType === "Owner") {
+      navigate("/owner-profile")
+    }
+
+  }
+
+  // const profileRoute =
+  //   userType === "customer"
+  //     ? navigate("/customer-profile") 
+  //     : navigate("/owner-profile")
+
+  const getUser = async () => {
+    const resp = await fetch(import.meta.env.VITE_BACKEND_URL + "/user", {
+      method: "GET",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem("jwt-token") },
+    })
+
+    const data = await resp.json()
+    const userType = data.user_type;
+    setUserType(userType)
+    console.log("This is the user: ", data);
+
+
+    console.log("data.id is:", data.id);
+
+
+
+    return data;
+  }
+
+  useEffect(() => {
+    getUser()
+
+  }, [localStorage.getItem("jwt-token")]);
 
   return (
     <nav className="navbar navbar-dark bg-dark fixed-top">
@@ -16,7 +67,7 @@ export const Navbar = () => {
 
         <div className="d-flex align-items-center gap-2 ms-auto">
           {/* SEARCH */}
-          <form className="d-flex mt-2 mb-2 ">
+          {/* <form className="d-flex mt-2 mb-2 ">
             <input
               className="form-control me-2 gap-2 "
               type="search"
@@ -24,7 +75,7 @@ export const Navbar = () => {
               style={{ width: "350px" }}
             />
             <button type="button" className="btn btn-success">Search</button>
-          </form>
+          </form> */}
 
           {/* TOGGLER */}
           <button
@@ -56,14 +107,14 @@ export const Navbar = () => {
               {/* LEFT SIDE LINKS */}
               <ul className="navbar-nav justify-content-end flex-grow-1 pe-3">
                 <li className="nav-item">
-                  <Link className="nav-link active" to="/feed">
+                  <Link className="nav-link active" to="/">
                     Home
                   </Link>
                 </li>
 
                 <li className="nav-item">
                   <Link className="nav-link" to="/link">
-                    Feed-Link
+                   Photo Feed
                   </Link>
                 </li>
                 <li className="nav-item">
@@ -97,15 +148,20 @@ export const Navbar = () => {
                       padding: "10px 5px"
                     }}
                   >
-                    
+
                     <li>
-                      <Link
+                      <button
                         className="nav-link"
-                        to="/profile"
-                        onClick={() => setShowAccountMenu(false)}
+                        onClick={handleProfileClick}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: 0
+                        }}
                       >
                         👤 My Profile
-                      </Link>
+                      </button>
                     </li>
 
                     <li>
@@ -115,19 +171,19 @@ export const Navbar = () => {
                         onClick={() => setShowAccountMenu(false)}
                       >
                         <i className="fa-solid fa-user-plus me-2 "></i>
-                        {store.userToken === null ? "Log In or Sign Up" : "Log Out"}
+                        {store.userToken === null ? <span>Log In or Sign Up</span> : <span onClick={logOut}>Log Out</span>}
                       </Link>
                     </li>
-                  
+
                   </ul>
                 )}
 
-            </ul>
+              </ul>
+            </div>
           </div>
         </div>
-      </div>
 
-    </div>
+      </div>
     </nav >
   );
 };

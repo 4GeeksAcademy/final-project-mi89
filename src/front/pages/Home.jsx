@@ -3,80 +3,8 @@ import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import PhotoCard from "../components/PhotoCard";
 import { useNavigate } from "react-router-dom";
 
-const MOCK_PHOTOS = [
-  {
-    id: 1,
-    dish: "Churrasco",
-    restaurant: "Latin Grill Tampa",
-    username: "@maria_g",
-    likes: 24,
-    points: 10,
-    timeAgo: "2 min ago",
-    isHot: true,
-    category: "entree",
-    image: "https://picsum.photos/seed/churrasco1/400/400",
-  },
-  {
-    id: 2,
-    dish: "Tostones con mojo",
-    restaurant: "Latin Grill Tampa",
-    username: "@carlos_r",
-    likes: 12,
-    points: 8,
-    timeAgo: "8 min ago",
-    isHot: false,
-    category: "app",
-    image: "https://picsum.photos/seed/tostones1/400/400",
-  },
-  {
-    id: 3,
-    dish: "Tres leches",
-    restaurant: "Latin Grill Tampa",
-    username: "@sofia_m",
-    likes: 9,
-    points: 6,
-    timeAgo: "15 min ago",
-    isHot: false,
-    category: "dessert",
-    image: "https://picsum.photos/seed/tresl1/400/400",
-  },
-  {
-    id: 4,
-    dish: "Mojito",
-    restaurant: "Latin Grill Tampa",
-    username: "@pedro_l",
-    likes: 7,
-    points: 4,
-    timeAgo: "22 min ago",
-    isHot: false,
-    category: "cocktail",
-    image: "https://picsum.photos/seed/mojito1/400/400",
-  },
-  {
-    id: 5,
-    dish: "Coquito Mocktail",
-    restaurant: "Latin Grill Tampa",
-    username: "@juan_k",
-    likes: 18,
-    points: 12,
-    timeAgo: "30 min ago",
-    isHot: true,
-    category: "mocktail",
-    image: "https://picsum.photos/seed/coquito1/400/400",
-  },
-  {
-    id: 6,
-    dish: "Ropa vieja",
-    restaurant: "Latin Grill Tampa",
-    username: "@ana_p",
-    likes: 5,
-    points: 3,
-    timeAgo: "45 min ago",
-    isHot: false,
-    category: "entree",
-    image: "https://picsum.photos/seed/ropav1/400/400",
-  },
-];
+const BACKEND = import.meta.env.VITE_BACKEND_URL;
+const RESTAURANT_ID = 1;
 
 const REWARDS = [
   { name: "Free yuca fries", points: 50 },
@@ -103,30 +31,31 @@ export const Home = () => {
   const [locationStatus, setLocationStatus] = useState("pending");
   const [citySearch, setCitySearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [photos, setPhotos] = useState([]);
+  const [loadingPhotos, setLoadingPhotos] = useState(true);
 
-  const loadMessage = async () => {
+  const loadPhotos = async () => {
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL;
-      if (!backendUrl)
-        throw new Error("VITE_BACKEND_URL is not defined in .env file");
-      const response = await fetch(backendUrl + "/api/hello");
+      const response = await fetch(`${BACKEND}/photos`);
       const data = await response.json();
-      if (response.ok) dispatch({ type: "set_hello", payload: data.message });
-      return data;
+
+      if (!response.ok) throw new Error(data.msg || "Could not fetch photos");
+
+      setPhotos(Array.isArray(data) ? data : []);
     } catch (error) {
-      if (error.message)
-        throw new Error(`Could not fetch the message from the backend.`);
+      console.error("Error loading photos:", error);
+      setPhotos([]);
+    } finally {
+      setLoadingPhotos(false);
     }
   };
 
   useEffect(() => {
-    loadMessage();
+    loadPhotos();
 
-    // Detectar tamaño de pantalla
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
 
-    // Pedir ubicación
     if (!navigator.geolocation) {
       setLocationStatus("denied");
     } else {
@@ -139,11 +68,13 @@ export const Home = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const filteredPhotos = MOCK_PHOTOS.filter((p) => {
-    if (filter === "all") return true;
-    if (filter === "mostLiked") return p.likes >= 10;
-    return p.category === filter;
-  }).sort((a, b) => (filter === "mostLiked" ? b.likes - a.likes : 0));
+  const filteredPhotos = photos
+    .filter((p) => {
+      if (filter === "all") return true;
+      if (filter === "mostLiked") return (p.likes || 0) >= 10;
+      return p.category === filter;
+    })
+    .sort((a, b) => (filter === "mostLiked" ? (b.likes || 0) - (a.likes || 0) : 0));
 
   return (
     <div className="my-5 p-4" style={{ background: "#0f0f0f", minHeight: "100vh", color: "#fff" }}>
@@ -161,6 +92,7 @@ export const Home = () => {
           📍 Showing results near you
         </div>
       )}
+
       {locationStatus === "denied" && (
         <div
           style={{
@@ -208,7 +140,6 @@ export const Home = () => {
         </div>
       )}
 
-      {/* ── Layout principal ── */}
       <div
         style={{
           display: "flex",
@@ -219,9 +150,7 @@ export const Home = () => {
           gap: "24px",
         }}
       >
-        {/* ── Feed ── */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          {/* Filtros — scroll horizontal en mobile */}
           <div
             style={{
               display: "flex",
@@ -256,21 +185,27 @@ export const Home = () => {
             ))}
           </div>
 
-          {/* Grid de fotos */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr 1fr",
-              gap: isMobile ? "10px" : "16px",
-            }}
-          >
-            {filteredPhotos.map((photo) => (
-              <PhotoCard key={photo.id} photo={photo} />
-            ))}
-          </div>
+          {loadingPhotos && (
+            <p style={{ color: "#888", textAlign: "center", padding: "40px" }}>
+              Loading photos...
+            </p>
+          )}
 
-          {/* Estado vacío */}
-          {filteredPhotos.length === 0 && (
+          {!loadingPhotos && (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr 1fr",
+                gap: isMobile ? "10px" : "16px",
+              }}
+            >
+              {filteredPhotos.map((photo) => (
+                <PhotoCard key={photo.id} photo={photo} onLikeToggle={loadPhotos} />
+              ))}
+            </div>
+          )}
+
+          {!loadingPhotos && filteredPhotos.length === 0 && (
             <div
               style={{
                 textAlign: "center",
@@ -288,16 +223,14 @@ export const Home = () => {
           )}
         </div>
 
-        {/* ── Sidebar ── */}
         <div
           style={{
             width: isMobile ? "100%" : "280px",
             display: "flex",
-            flexDirection: isMobile ? "column" : "column",
+            flexDirection: "column",
             gap: "16px",
           }}
         >
-          {/* Upload CTA */}
           <div
             style={{
               background: "#1a1a1a",
@@ -307,9 +240,7 @@ export const Home = () => {
               textAlign: "center",
             }}
           >
-            <div style={{ fontSize: "22px", marginBottom: "8px" }}>
-              📸 You're here!
-            </div>
+            <div style={{ fontSize: "22px", marginBottom: "8px" }}>📸 You're here!</div>
             <p
               style={{
                 fontSize: "13px",
@@ -330,8 +261,16 @@ export const Home = () => {
               Earn +10 pts per photo · +2 pts per like
             </p>
             <button
-              onClick={() => navigate("/restaurant/1/upload")}
-              // TODO: reemplazar 1 por restaurantId del store cuando el login esté listo
+              onClick={() => {
+                const token = localStorage.getItem("jwt-token");
+
+                if (token && token !== "undefined" && token !== "null") {
+                  navigate("/restaurant/1/upload");
+                } else {
+                  localStorage.setItem("redirect-after-login", "/restaurant/1/upload");
+                  navigate("/login");
+                }
+              }}
               style={{
                 width: "100%",
                 background: "#ff6b35",
@@ -348,7 +287,6 @@ export const Home = () => {
             </button>
           </div>
 
-          {/* Rewards */}
           <div
             style={{
               background: "#1a1a1a",
@@ -381,14 +319,11 @@ export const Home = () => {
                 }}
               >
                 <span>{r.name}</span>
-                <span style={{ color: "#ff6b35", fontWeight: "600" }}>
-                  {r.points} pts
-                </span>
+                <span style={{ color: "#ff6b35", fontWeight: "600" }}>{r.points} pts</span>
               </div>
             ))}
           </div>
 
-          {/* Weekly competition */}
           <div
             style={{
               background: "#1a1a1a",
@@ -397,9 +332,7 @@ export const Home = () => {
               padding: "20px",
             }}
           >
-            <div style={{ fontWeight: "600", marginBottom: "8px" }}>
-              Weekly competition 🏆
-            </div>
+            <div style={{ fontWeight: "600", marginBottom: "8px" }}>Weekly competition 🏆</div>
             <p style={{ fontSize: "13px", color: "#aaa", lineHeight: "1.6" }}>
               Top snapper at Latin Grill Tampa this week wins a{" "}
               <span style={{ color: "#ff6b35", fontWeight: "600" }}>
@@ -407,9 +340,7 @@ export const Home = () => {
               </span>
               . Upload more to climb the ranks!
             </p>
-            <div
-              style={{ fontSize: "12px", color: "#ff6b35", marginTop: "10px" }}
-            >
+            <div style={{ fontSize: "12px", color: "#ff6b35", marginTop: "10px" }}>
               Ends in: 2 days 14 hours
             </div>
           </div>

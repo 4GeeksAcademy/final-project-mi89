@@ -1,0 +1,46 @@
+#login-page form {
+  background-color: #333333;
+  color: lightgray;
+}
+
+#login-page h2 {
+  color: #ff6b35;
+  font-weight: bold;
+}
+
+#login-page strong {
+  color: white;
+  font-size: larger;
+}
+
+#login-page input {
+  border-radius: 0.5em;
+}
+
+#login-page button {
+  background-color: #ff6b35;
+  border: none;
+  border-radius: 0.5em;
+}
+
+#login-page button:hover {
+  text-decoration: underline;
+}
+
+#login-page .login-type-button {
+  color: black;
+  background-color: lightgray;
+}
+
+#login-page .loading {
+  background-color: #ff6b35;
+  padding: 1rem;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+#login-page .loading-message {
+  color: white;
+  text-align: center;
+}

@@ -25,7 +25,8 @@ export const router = createBrowserRouter(
       <Route path="/demo" element={<Demo />} />
       <Route path="/owner-dashboard" element={<OwnerDashboard />} />
       <Route path="/restaurant/:id/upload" element={<CustomerUpload />} />
-      <Route path="/profile" element={<Profile />} />
+      <Route path="/owner-profile" element={<OwnerProfile />} />
+      <Route path="/customer-profile" element={<CustomerProfile />} />
     </Route>
   )
 );  
