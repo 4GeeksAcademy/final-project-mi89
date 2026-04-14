@@ -2,7 +2,12 @@ import { Link } from "react-router-dom";
 import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export const Navbar = () => {
-  const { store } = useGlobalReducer();
+  const { store, dispatch } = useGlobalReducer();
+
+  function logOut() {
+    dispatch({ type: "set_loggingOut", payload: true })
+    // This store variable will equal true only when the user clicks Log Out from the navbar, then it will immediately become false because of the useEffect inside Login.jsx, which will then log out and navigate to the home page.
+  }
 
   return (
     <nav className="navbar navbar-dark bg-dark fixed-top">
@@ -89,7 +94,7 @@ export const Navbar = () => {
                     <li>
                       <Link className="dropdown-item " to="/login">
                         <i className="fa-solid fa-user-plus me-2 "></i>
-                        {store.userToken === null ? <span>Log In or Sign Up</span> : <span>Log Out</span>}
+                        {store.userToken === null ? <span>Log In or Sign Up</span> : <span onClick={logOut}>Log Out</span>}
                       </Link>
                     </li>
                   </ul>
