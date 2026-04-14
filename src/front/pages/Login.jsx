@@ -155,7 +155,7 @@ export const Login = () => {
     }, [store.loggingOut])
 
     return (
-        <div id="login-page" className="bg-dark d-flex justify-content-center row mt-5">
+        <div id="login-page" className="bg-black d-flex justify-content-center row mt-5">
             {store.userToken === null ?
                 (<form onSubmit={submitCredentials} className="mt-5 p-4 card col-10 col-md-6 col-xl-4 my-5 rounded-4 border border-2 border-secondary">
                     <h2 className="text-center">{logInType === "Sign Up" && userType} {logInType}</h2>
