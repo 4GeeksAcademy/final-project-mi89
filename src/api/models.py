@@ -63,6 +63,7 @@ class User(db.Model):
 
 class Customer(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(String(25), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     photos: Mapped[List["Photo"]
                    ] = relationship(back_populates="customer")
@@ -80,6 +81,7 @@ class Customer(db.Model):
 
 class Owner(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(String(25), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     restaurants = relationship(
         "Restaurant", primaryjoin="Owner.id == Restaurant.owner_id")
@@ -88,7 +90,8 @@ class Owner(db.Model):
 
     def serialize(self):
         return {
-            "id": self.id
+            "id": self.id,
+            "username": self.username,
         }
 
 

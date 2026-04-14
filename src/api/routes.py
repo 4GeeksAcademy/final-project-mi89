@@ -53,10 +53,12 @@ def get_users():
     return jsonify(user_dictionaries), 200
 
 
-@api.route("/user/<int:user_id>", methods=["GET"])
-def get_user(user_id):
-    current_user = db.session.get(User, user_id)
-    return jsonify(current_user(current_user.serialize)), 200
+@api.route("/user", methods=["GET"])
+@jwt_required()
+def get_user(): 
+    user = db.get_or_404(User, int(get_jwt_identity()))
+    current_user = db.session.get(User, user.id)
+    return jsonify(current_user.serialize()), 200
 
 
 @api.route("/user", methods=["POST"])
@@ -75,7 +77,6 @@ def create_user():
 
 @api.route("/login", methods=["POST"])
 def login():
-    user_type = request.json.get("user_type", None)
     email = request.json.get("email", None)
     password = request.json.get("password", None)
 
@@ -135,6 +136,24 @@ def new_customer():
     return jsonify({
         "user_id": user_id,
         "customer": customer.serialize()
+    })
+
+
+@api.route("/owner", methods=["POST"])
+def new_owner():
+    user_id = request.json.get("user_id")
+    username = request.json.get("username")
+
+    owner = Owner(
+        user_id=user_id,
+        username=username,
+    )
+    db.session.add(owner)
+    db.session.commit()
+
+    return jsonify({
+        "user_id": user_id,
+        "owner": owner.serialize()
     })
 
 
