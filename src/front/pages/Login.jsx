@@ -19,7 +19,7 @@ export const Login = () => {
 
     async function submitCredentials(e) {
         e.preventDefault();
-        if (logInType === "Log In") {
+        if (logInType === "Log In" && email != "" && password != "") {
             await login(email, password);
         }
         if (logInType === "Sign Up") {
@@ -32,7 +32,7 @@ export const Login = () => {
         if (store.userToken === undefined) {
             await logout()
         }
-        console.log(userType + " " + username + " is trying to " + logInType);
+        console.log(userType + " with email " + email + " is trying to " + logInType);
     }
 
     const login = async (email, password) => {
@@ -64,7 +64,7 @@ export const Login = () => {
 
         await getUser()
 
-        navigate("/");
+        if (email != "" && password != "") { navigate("/"); }
 
         return data
     }
@@ -141,7 +141,7 @@ export const Login = () => {
         dispatch({ type: "set_userToken", payload: null });
         setEmail("");
         setPassword("");
-        console.log("token after logging out:", store.userToken);
+        console.log("You are logging out");
     }
 
     useEffect(() => {
@@ -150,11 +150,12 @@ export const Login = () => {
             navigate("/");
             dispatch({ type: "set_loggingOut", payload: false })
             // This store variable will equal true only when the user clicks Log Out from the navbar, then it will immediately become false because of this useEffect, which will then log out and navigate to the home page.
+            console.log(store.loggingOut);
         }
     }, [store.loggingOut])
 
     return (
-        <div id="login-page" className="bg-dark d-flex justify-content-center row mt-5">
+        <div id="login-page" className="bg-black d-flex justify-content-center row mt-5">
             {store.userToken === null ?
                 (<form onSubmit={submitCredentials} className="mt-5 p-4 card col-10 col-md-6 col-xl-4 my-5 rounded-4 border border-2 border-secondary">
                     <h2 className="text-center">{logInType === "Sign Up" && userType} {logInType}</h2>
@@ -173,14 +174,14 @@ export const Login = () => {
                                 }}
                             />
                         </label> : <label className="w-100 text-center"><strong>Customers or owners can log in here.</strong></label>} <br />
-                        <label className="w-100">Username:
+                        {logInType === "Sign Up" && <label className="w-100">Username:
                             <input
                                 className="w-100"
                                 type="username"
                                 value={username}
                                 onChange={(e) => { setUsername(e.target.value) }}
                             />
-                        </label> <br />
+                        </label>} <br />
                         <label className="w-100">Email:
                             <input
                                 className="w-100"
@@ -202,7 +203,7 @@ export const Login = () => {
                     <span className="mb-3 text-center"><button className="w-100 login-type-button" onClick={() => { logInType === "Log In" ? setLogInType("Sign Up") : setLogInType("Log In") }}>I {logInType === "Log In" ? "don't" : "already"} have an account</button></span>
                 </form>)
                 : (<div><p className="loading">Loading...</p>
-                <p className="loading-message">If this is going too slow, <Link to="/">click here to go home.</Link></p>
+                    <p className="loading-message">If this is going too slow, <Link to="/">click here to go home.</Link></p>
                 </div>)}
         </div>
     )
