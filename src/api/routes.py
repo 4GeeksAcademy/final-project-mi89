@@ -6,6 +6,7 @@ from api.models import db, User, Customer, Owner, Photo, Like, Comment, Point
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
 from sqlalchemy import select
+from flask_cors import cross_origin
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import cloudinary
 import cloudinary.uploader
@@ -14,8 +15,8 @@ cloudinary.config(secure=True)
 api = Blueprint('api', __name__)
 
 # Allow CORS requests to this API
-CORS(api)
 
+CORS(api)
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
@@ -59,6 +60,12 @@ def get_user():
     user = db.get_or_404(User, int(get_jwt_identity()))
     current_user = db.session.get(User, user.id)
     return jsonify(current_user.serialize()), 200
+
+@api.route("/user/<int:user_id>", methods=["GET"])
+@jwt_required()
+def get_specfic_user(user_id):
+    current_user = db.session.get(User, user_id)
+    return jsonify(current_user.serialize()), 200  # ✅ FIXED
 
 
 @api.route("/user", methods=["POST"])
