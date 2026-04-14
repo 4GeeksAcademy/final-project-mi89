@@ -19,7 +19,7 @@ export const Login = () => {
 
     async function submitCredentials(e) {
         e.preventDefault();
-        if (logInType === "Log In") {
+        if (logInType === "Log In" && username != "" && email != "" && password != "" ) {
             await login(email, password);
         }
         if (logInType === "Sign Up") {
@@ -64,7 +64,7 @@ export const Login = () => {
 
         await getUser()
 
-        navigate("/");
+        if (username != "" && email != "" && password != "") { navigate("/"); }
 
         return data
     }
@@ -141,7 +141,7 @@ export const Login = () => {
         dispatch({ type: "set_userToken", payload: null });
         setEmail("");
         setPassword("");
-        console.log("token after logging out:", store.userToken);
+        console.log("You are logging out");
     }
 
     useEffect(() => {
@@ -150,6 +150,7 @@ export const Login = () => {
             navigate("/");
             dispatch({ type: "set_loggingOut", payload: false })
             // This store variable will equal true only when the user clicks Log Out from the navbar, then it will immediately become false because of this useEffect, which will then log out and navigate to the home page.
+            console.log(store.loggingOut);
         }
     }, [store.loggingOut])
 
@@ -202,7 +203,7 @@ export const Login = () => {
                     <span className="mb-3 text-center"><button className="w-100 login-type-button" onClick={() => { logInType === "Log In" ? setLogInType("Sign Up") : setLogInType("Log In") }}>I {logInType === "Log In" ? "don't" : "already"} have an account</button></span>
                 </form>)
                 : (<div><p className="loading">Loading...</p>
-                <p className="loading-message">If this is going too slow, <Link to="/">click here to go home.</Link></p>
+                    <p className="loading-message">If this is going too slow, <Link to="/">click here to go home.</Link></p>
                 </div>)}
         </div>
     )

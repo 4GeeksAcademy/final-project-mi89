@@ -62,7 +62,7 @@ export const Navbar = () => {
               {/* LEFT SIDE LINKS */}
               <ul className="navbar-nav justify-content-end flex-grow-1 pe-3">
                 <li className="nav-item">
-                  <Link className="nav-link active" to="/feed">
+                  <Link className="nav-link active" to="/">
                     Home
                   </Link>
                 </li>
@@ -88,7 +88,7 @@ export const Navbar = () => {
                   <ul className="dropdown-menu dropdown-menu-dark">
                     <li>
                       <Link className="dropdown-item" to="/profile">
-                        Profile: Costumer or Owner
+                        Profile: Customer or Owner
                       </Link>
                     </li>
                     <li>
