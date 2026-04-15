@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer";
-
+import logo from "../assets/img/Platera1.png"
 export const Navbar = () => {
   const { store, dispatch } = useGlobalReducer();
 
@@ -18,6 +18,7 @@ export const Navbar = () => {
     // alert()
     // console.log(userType)
  console.log("userType value:", userType);
+ 
     if (userType === "Customer") {
 
       navigate("/customer-profile")
@@ -61,9 +62,11 @@ export const Navbar = () => {
     <nav className="navbar navbar-dark bg-dark fixed-top">
       <div className="container-fluid">
 
-        <Link className="navbar-brand" to="/">
-          YummyEats
-        </Link>
+
+   <Link className="navbar-brand" to="/">
+  <img src={logo} alt="Platera" style={{ height: "70px", width: "auto" }} />
+</Link>
+        
 
         <div className="d-flex align-items-center gap-2 ms-auto">
           {/* SEARCH */}
