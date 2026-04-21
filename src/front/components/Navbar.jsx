@@ -116,12 +116,12 @@ export const Navbar = () => {
                 </li>
 
                 <li className="nav-item">
-                  <Link className="nav-link" to="/link">
+                  <Link className="nav-link disabled" to="/link">
                    Photo Feed
                   </Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/link">
+                  <Link className="nav-link disabled" to="/link">
                     Settings
                   </Link>
                 </li>
