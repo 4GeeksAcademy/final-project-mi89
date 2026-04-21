@@ -538,27 +538,29 @@ export const CustomerProfile = () => {
                 </div>
               </div>
 
-              <button
-                type="button"
-                className="btn w-100"
-                style={{
-                  background: "linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%)",
-                  color: "#fff",
-                  fontWeight: "600",
-                  border: "none",
-                  borderRadius: "8px",
-                  padding: "12px",
-                  marginTop: "15px",
-                  cursor: "pointer",
-                  transition: "transform 0.2s",
-                }}
-                onMouseEnter={(e) =>
-                  (e.target.style.transform = "translateY(-2px)")
-                }
-                onMouseLeave={(e) => (e.target.style.transform = "translateY(0)")}
-              >
-                📸 Upload Photo
-              </button>
+              <Link to="/restaurant/1/upload">
+                <button
+                  type="button"
+                  className="btn w-100"
+                  style={{
+                    background: "linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%)",
+                    color: "#fff",
+                    fontWeight: "600",
+                    border: "none",
+                    borderRadius: "8px",
+                    padding: "12px",
+                    marginTop: "15px",
+                    cursor: "pointer",
+                    transition: "transform 0.2s",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.target.style.transform = "translateY(-2px)")
+                  }
+                  onMouseLeave={(e) => (e.target.style.transform = "translateY(0)")}
+                >
+                  📸 Upload Photo
+                </button>
+              </Link>
             </div>
           </div>
         </div>
