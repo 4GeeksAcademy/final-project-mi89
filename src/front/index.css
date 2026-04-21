@@ -1,3 +1,8 @@
+body {
+  margin-top: 5em;
+  overflow-y: scroll;
+}
+
 #login-page form {
   background-color: #333333;
   color: lightgray;
