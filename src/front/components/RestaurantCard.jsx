@@ -1,6 +1,5 @@
 import React from "react";
 
-
 export const RestaurantCard = ({
   image,
   restaurantName,
@@ -9,17 +8,24 @@ export const RestaurantCard = ({
   buttonText,
   cardBg = "#0f0f0f",
   textColor = "#fff",
+    imageHeight = "180px",  // ← ADD THIS with default value
 }) => {
   return (
     <div
       className="card border mx-1 rounded border-warning"
-      style={{ minWidth: "30%", background: "#0f0f0f" }}
+      style={{ minWidth: "30%", background: "#0f0f0f", height: "400px", display: "flex", flexDirection: "column" }}
     >
-      <img src={image} className="card-img-top" alt={restaurantName} />
+      <img 
+        src={image} 
+        className="card-img-top" 
+        alt={restaurantName}
+        style={{ height: imageHeight, objectFit: "cover", width: "100%" }}
+        
+      />
 
       <div
         className="card-body rounded"
-        style={{ background: cardBg, color: textColor }}
+        style={{ background: cardBg, color: textColor, flex: 1, display: "flex", flexDirection: "column" }}
       >
         <div className="row align-items-center">
           <h6 className="col-5" style={{ color: textColor }}>
@@ -55,7 +61,7 @@ export const RestaurantCard = ({
           {description}
         </p>
 
-        <a href="#" className="btn btn-primary">
+        <a href="#" className="btn btn-primary mt-auto">
           {buttonText}
         </a>
       </div>

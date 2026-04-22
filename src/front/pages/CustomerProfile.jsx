@@ -18,6 +18,7 @@ const restaurantRewards = [
     image: "https://www.eatthis.com/wp-content/uploads/sites/4/2022/06/chipotle-burrito-bowls-tacos.jpg?quality=82&strip=1&w=800",
     cardBg: "#0f0f0f",
     textColor: "#fff",
+    height: "400px",
   },
   {
     id: 2,
@@ -45,6 +46,7 @@ const restaurantRewards = [
     image: "https://media.istockphoto.com/id/1257433964/photo/sushi.jpg?s=612x612&w=0&k=20&c=9wed3Ja7iQqTDZi_eg9NIgF-vY3DdFQL5WMtJ5QNBZY=",
     cardBg: "#ffffff",
     textColor: "#000000",
+    
   },
 ];
 
@@ -421,6 +423,7 @@ export const CustomerProfile = () => {
                       buttonText="Claim Deal"
                       cardBg={card.cardBg}
                       textColor={card.textColor}
+                      imageHeight={card.id === 1 ? "180x" : "180px"}  // ← Chipotle is bigger
                     />
                   </div>
                 ))}
