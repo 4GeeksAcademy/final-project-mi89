@@ -59,12 +59,12 @@ export const Navbar = () => {
   }, [localStorage.getItem("jwt-token")]);
 
   return (
-    <nav className="navbar navbar-dark bg-dark fixed-top">
+    <nav className=" y-2 navbar navbar-dark bg-dark fixed-top">
       <div className="container-fluid">
 
 
-   <Link className="navbar-brand" to="/">
-  <img src={logo} alt="Platera" style={{ height: "70px", width: "auto" }} />
+   <Link className="navbar-brand" to="/" style={{ padding: "0", display: "flex", alignItems: "center" }}>
+  <img src={logo} alt="Platera1" style={{ height: "65px", width: "65px", objectFit: "contain" }} />
 </Link>
         
 

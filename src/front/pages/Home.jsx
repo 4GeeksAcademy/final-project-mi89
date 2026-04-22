@@ -77,10 +77,14 @@ export const Home = () => {
     .sort((a, b) => (filter === "mostLiked" ? (b.likes || 0) - (a.likes || 0) : 0));
 
   return (
-    <div className="my-5 p-4" style={{ background: "#0f0f0f", minHeight: "100vh", color: "#fff" }}>
+    <div className=" p-3" 
+    style={{ background: "#0f0f0f",
+     minHeight: "100vh",
+      color: "#fff",
+       marginTop: "40px" }}>
       {/* ── Location bar ── */}
       {locationStatus === "granted" && (
-        <div
+        <div className="my-5 "
           style={{
             background: "#0d1f0d",
             padding: "8px 16px",
@@ -94,7 +98,7 @@ export const Home = () => {
       )}
 
       {locationStatus === "denied" && (
-        <div
+        <div className="my-5"
           style={{
             background: "#1a1a1a",
             padding: "10px 16px",
