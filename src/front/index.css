@@ -1,3 +1,15 @@
+body {
+  background-color: black;
+  overflow: scroll;
+}
+
+/* Fonts: */
+.carter-one-regular {
+  font-family: "Carter One", system-ui;
+  font-weight: 400;
+  font-style: normal;
+}
+
 #login-page form {
   background-color: #333333;
   color: lightgray;
