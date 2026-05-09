@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import PhotoCard from "../components/PhotoCard";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 
 const BACKEND = import.meta.env.VITE_BACKEND_URL;
 const RESTAURANT_ID = 1;
@@ -26,6 +26,10 @@ const filters = [
 export const Home = () => {
   const { store, dispatch } = useGlobalReducer();
   const navigate = useNavigate();
+
+  if (store.userToken === null) { 
+    return <Navigate to="/landing-page" replace />;
+  }
 
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [locationStatus, setLocationStatus] = useState("pending");

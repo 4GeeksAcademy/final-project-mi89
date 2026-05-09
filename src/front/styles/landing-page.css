@@ -1,0 +1,51 @@
+body {
+  background-color: black;
+  color: lightgray;
+}
+
+.container {
+  margin-top: 6em;
+  background-color: black;
+}
+
+img {
+  width: 20em;
+}
+
+h1 {
+  font-size: 4em;
+}
+
+.stats {
+  font-size: smaller;
+  width: 75%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  gap: 2rem;
+}
+
+h2 {
+  font-family: "Carter One", system-ui;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.call-to-action {
+  font-size: 2em;
+}
+
+.call-to-action button {
+  background-color: #ff6b35;
+  border: none;
+  border-radius: 0.5em;
+}
+
+.white-header {
+  color: white;
+}
+
+.orange-header {
+  color: #ff6b35;
+}

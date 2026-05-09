@@ -59,7 +59,7 @@ export const Navbar = () => {
   }, [localStorage.getItem("jwt-token")]);
 
   return (
-    <nav className=" y-2 navbar navbar-dark bg-dark fixed-top">
+    <nav className=" y-2 navbar navbar-dark bg-dark">
       <div className="container-fluid">
 
 
