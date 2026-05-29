@@ -236,3 +236,27 @@ class Restaurant(db.Model):
 #     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 #     # restaurants: Mapped[List["Restaurant"]
 #     #                ] = relationship(back_populates="owner")
+
+
+#This code creates an owner user first. Delete if it causes issues.
+def init_db():
+    db.create_all()
+
+    if Owner.query.first() is None:
+        # Create the User first (Owner requires a user_id)
+        user = User(
+            user_type='owner',
+            email='owner@example.com',
+            password='secure_password_here',  # Uses the setter to hash it
+            is_active=True
+        )
+        db.session.add(user)
+        db.session.flush()  # Flush to get the user.id before creating Owner
+
+        # Now create the Owner with the user_id
+        owner = Owner(
+            username='restaurant_owner',
+            user_id=user.id
+        )
+        db.session.add(owner)
+        db.session.commit()
