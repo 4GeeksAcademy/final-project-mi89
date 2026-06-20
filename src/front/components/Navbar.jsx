@@ -17,8 +17,8 @@ export const Navbar = () => {
 
     // alert()
     // console.log(userType)
- console.log("userType value:", userType);
- 
+    console.log("userType value:", userType);
+
     if (userType === "Customer") {
 
       navigate("/customer-profile")
@@ -63,10 +63,10 @@ export const Navbar = () => {
       <div className="container-fluid">
 
 
-   <Link className="navbar-brand" to="/">
-  <img src={logo} alt="Platera" style={{ height: "70px", width: "auto" }} />
-</Link>
-        
+        <Link className="navbar-brand" to="/">
+          <img src={logo} alt="Platera" style={{ height: "70px", width: "auto" }} />
+        </Link>
+
 
         <div className="d-flex align-items-center gap-2 ms-auto">
           {/* SEARCH */}
@@ -117,7 +117,7 @@ export const Navbar = () => {
 
                 <li className="nav-item">
                   <Link className="nav-link disabled" to="/link">
-                   Photo Feed
+                    Photo Feed
                   </Link>
                 </li>
                 <li className="nav-item">
