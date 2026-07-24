@@ -257,7 +257,8 @@ def upload_photo():
     file = request.files['photo']
     dish_name = request.form.get("dish_name", "Unknown Dish")
     category = request.form.get("category", "entree")
-    restaurant_id = request.form.get("restaurant_id", 1)
+    # restaurant_id = request.form.get("restaurant_id", 1) # Use this after we've added more restaurants
+    restaurant_id = 1 # Hard coded since there's only 1 restaurant
 
     # Subir a Cloudinary
     result = cloudinary.uploader.upload(file, folder="tablesnap")
